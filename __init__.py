@@ -62,6 +62,9 @@ os.environ['SDL_VIDEO_CENTERED'] = '1' # center the window.
 # source: https://stackoverflow.com/questions/5814125/
 # how-to-designate-where-pygame-creates-the-game-window
 
+# Gets current filepath
+PATH = "%s/Images" % os.path.dirname(os.path.realpath(__file__))
+
 # events
 RUN = 10
 pygame.time.set_timer(RUN, 1000)
@@ -263,43 +266,43 @@ else:
     fontlarge2 = pygame.sysfont.SysFont(None, 48)
 
 # images
-logo = pygame.image.load("Images/logo.png")
+logo = pygame.image.load("%s/Images/logo.png" % PATH)
 logo = pygame.transform.scale(logo, (521, 178))
-logotext = pygame.image.load("Images/logotext.png")
-titleprompt = pygame.image.load("Images/titleprompt.png")
-gameoveroverlay = pygame.image.load("Images/gameoveroverlay.png")
-yoke4 = pygame.image.load("Images/yoke4.png")
-yoke3 = pygame.image.load("Images/yoke3.png")
-yoke2 = pygame.image.load("Images/yoke2.png")
-yoke1 = pygame.image.load("Images/yoke1.png")
-yoke0 = pygame.image.load("Images/yoke0.png")
-yoken1 = pygame.image.load("Images/yoke-1.png")
-yoken2 = pygame.image.load("Images/yoke-2.png")
-yoken3 = pygame.image.load("Images/yoke-3.png")
-yoken4 = pygame.image.load("Images/yoke-4.png")
+logotext = pygame.image.load("%s/Images/logotext.png" % PATH)
+titleprompt = pygame.image.load("%s/Images/titleprompt.png" % PATH)
+gameoveroverlay = pygame.image.load("%s/Images/gameoveroverlay.png" % PATH)
+yoke4 = pygame.image.load("%s/Images/yoke4.png" % PATH)
+yoke3 = pygame.image.load("%s/Images/yoke3.png" % PATH)
+yoke2 = pygame.image.load("%s/Images/yoke2.png" % PATH)
+yoke1 = pygame.image.load("%s/Images/yoke1.png" % PATH)
+yoke0 = pygame.image.load("%s/Images/yoke0.png" % PATH)
+yoken1 = pygame.image.load("%s/Images/yoke-1.png" % PATH)
+yoken2 = pygame.image.load("%s/Images/yoke-2.png" % PATH)
+yoken3 = pygame.image.load("%s/Images/yoke-3.png" % PATH)
+yoken4 = pygame.image.load("%s/Images/yoke-4.png" % PATH)
 
 # sounds
-sound_pullup = pygame.mixer.Sound("Sounds/sound_pullup.wav")
-sound_terrain = pygame.mixer.Sound("Sounds/sound_terrain.wav")
-sound_dontsink = pygame.mixer.Sound("Sounds/sound_dontsink.wav")
+sound_pullup = pygame.mixer.Sound("%s/Sounds/sound_pullup.wav" % PATH)
+sound_terrain = pygame.mixer.Sound("%s/Sounds/sound_terrain.wav" % PATH)
+sound_dontsink = pygame.mixer.Sound("%s/Sounds/sound_dontsink.wav" % PATH)
 
-sound_stall = pygame.mixer.Sound("Sounds/sound_stall.wav")
-sound_overspeed = pygame.mixer.Sound("Sounds/sound_overspeed.wav")
-sound_bankangle = pygame.mixer.Sound("Sounds/sound_bankangle.wav")
-sound_gear = pygame.mixer.Sound("Sounds/sound_gear.wav")
+sound_stall = pygame.mixer.Sound("%s/Sounds/sound_stall.wav" % PATH)
+sound_overspeed = pygame.mixer.Sound("%s/Sounds/sound_overspeed.wav" % PATH)
+sound_bankangle = pygame.mixer.Sound("%s/Sounds/sound_bankangle.wav" % PATH)
+sound_gear = pygame.mixer.Sound("%s/Sounds/sound_gear.wav" % PATH)
  
-sound_config = pygame.mixer.Sound("Sounds/sound_config.wav")
-sound_apdisconnect = pygame.mixer.Sound("Sounds/sound_apdisconnect.wav")
-sound_altitude = pygame.mixer.Sound("Sounds/sound_altitude.wav")
+sound_config = pygame.mixer.Sound("%s/Sounds/sound_config.wav" % PATH)
+sound_apdisconnect = pygame.mixer.Sound("%s/Sounds/sound_apdisconnect.wav" % PATH)
+sound_altitude = pygame.mixer.Sound("%s/Sounds/sound_altitude.wav" % PATH)
 
-sound_moonbase = pygame.mixer.Sound("Sounds/sound_moonbase.wav")
+sound_moonbase = pygame.mixer.Sound("%s/Sounds/sound_moonbase.wav" % PATH)
 
 
 # PFD images and static text
-attitudetape = pygame.image.load("Images/attitudetape.png")
+attitudetape = pygame.image.load("%s/Images/attitudetape.png" % PATH)
 attitudetapex = 135 # orig: 135, new: -223
 attitudetapey = 150 # orig: 150, new: -637
-attitudecrosshair = pygame.image.load("Images/attitudecrosshair.png")
+attitudecrosshair = pygame.image.load("%s/Images/attitudecrosshair.png" % PATH)
 attituderecttop2 = pygame.rect.Rect(135, 0, 350, 100) # 284
 attituderecttop = pygame.rect.Rect(135, 100, 400, 140) #284
 attituderectleft = pygame.rect.Rect(135, 150, 50, 350)
@@ -321,8 +324,8 @@ verticalspeedlabel = font.render("VERT SPD", 1, white)
 # x: 560 to 1260
 # y: 30 to 730
 
-navmarker = pygame.image.load("Images/navmarker.png")
-objectivemarker = pygame.image.load("Images/objectivemarker.png")
+navmarker = pygame.image.load("%s/Images/navmarker.png" % PATH)
+objectivemarker = pygame.image.load("%s/Images/objectivemarker.png" % PATH)
 
 x = 963.917941 # x = 891 for center
 y = 430.6969420
@@ -381,23 +384,23 @@ objectiveyuser = objectivey - 10
 
 # NAV images and static text
 navarea = pygame.rect.Rect(560, 30, 700, 700)
-navcircle = pygame.image.load("Images/navcircle.png")
+navcircle = pygame.image.load("%s/Images/navcircle.png" % PATH)
 locationlabel = font.render("LOCATION", 1, white)
 throttlelabel = font.render("THR", 1, white)
 throttlerect100 = pygame.rect.Rect(155, 380, 20, 100)
 throttlerect130 = pygame.rect.Rect(155, 350, 20, 130)
 
 # warnings
-msg_apengaged = pygame.image.load("Images/msg_apengaged.png")
-msg_apdisconnect = pygame.image.load("Images/msg_apdisconnect.png")
-msg_bankangle = pygame.image.load("Images/msg_bankangle.png")
-msg_over_g = pygame.image.load("Images/msg_over_g.png")
-msg_overspeed = pygame.image.load("Images/msg_overspeed.png")
-msg_stall = pygame.image.load("Images/msg_stall.png")
-msg_pullup = pygame.image.load("Images/msg_pullup.png")
-msg_warning = pygame.image.load("Images/msg_warning.png")
-msg_dontsink = pygame.image.load("Images/msg_dontsink.png")
-##msg_terrain = pygame.image.load("Images/msg_terrain.png)
+msg_apengaged = pygame.image.load("%s/Images/msg_apengaged.png" % PATH)
+msg_apdisconnect = pygame.image.load("%s/Images/msg_apdisconnect.png" % PATH)
+msg_bankangle = pygame.image.load("%s/Images/msg_bankangle.png" % PATH)
+msg_over_g = pygame.image.load("%s/Images/msg_over_g.png" % PATH)
+msg_overspeed = pygame.image.load("%s/Images/msg_overspeed.png" % PATH)
+msg_stall = pygame.image.load("%s/Images/msg_stall.png" % PATH)
+msg_pullup = pygame.image.load("%s/Images/msg_pullup.png" % PATH)
+msg_warning = pygame.image.load("%s/Images/msg_warning.png" % PATH)
+msg_dontsink = pygame.image.load("%s/Images/msg_dontsink.png" % PATH)
+msg_terrain = pygame.image.load("%s/Images/msg_terrain.png" % PATH)
 
 startupmsg = """
 Slight Fimulator Copyright (C) 2017 Hao Tian
@@ -412,7 +415,7 @@ under certain conditions; see COPYING file
 print startupmsg
 
 # TODO: does vorbis play on windows?
-pygame.mixer.music.load("Sounds/chilled-eks.ogg") 
+pygame.mixer.music.load("%s/Sounds/chilled-eks.ogg" % PATH) 
 pygame.mixer.music.play(-1)
 
 while True:
@@ -436,7 +439,7 @@ while True:
 ##### MAIN LOOP ###
 pygame.mouse.set_pos(1279, 1023)
 pygame.mixer.music.stop()
-pygame.mixer.music.load("Sounds/chip-respect.ogg")
+pygame.mixer.music.load("%s/Sounds/chip-respect.ogg" % PATH)
 pygame.mixer.music.play(-1)
 
 while exitcode == 0:
