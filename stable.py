@@ -1,53 +1,77 @@
-import pygame
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+"""Slight Fimulator - Flight simlator in Python
+Copyright (C) 2017 Hao Tian
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import random
 import os
 import math
 
-
-##    Slight Fimulator - Flight simlator in Python
-##    Copyright (C) 2017 Hao Tian
-##
-##    This program is free software: you can redistribute it and/or modify
-##    it under the terms of the GNU General Public License as published by
-##    the Free Software Foundation, either version 3 of the License, or
-##    (at your option) any later version.
-##
-##    This program is distributed in the hope that it will be useful,
-##    but WITHOUT ANY WARRANTY; without even the implied warranty of
-##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##    GNU General Public License for more details.
-##
-##    You should have received a copy of the GNU General Public License
-##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import pygame
 
 
+"""Slight Fimulator - Flight simlator in Python
+Copyright (C) 2017 Hao Tian
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+BUG REPORTS
+FIXED: nav text doesn't appear above objectivemarker
+FIXED: if altitude +/- 500 objectivealtitude, play sound_altitude
+WONTFIX: Use perspective grid to create images for yoke
+WONTFIX: shattered glass transparnt png on crash
+WONTFIX: ignore controls if apleveloff == True
+TODO: add a blue background to attitude indicator
+WONTFIX: add framerate speedup (0.5 for 2x speed). divide every
+  action by the speedup rate.
+WONTFIX: output a log after flight
+WONTFIX: generate a random background of green and blue squares
+FIXED: BUG: Damaage has decimal when damaged by overspeed
+
+ALTERNATE NAMES
+Glide Slope
+Departure As Filed
+Hundred Above
+Decision Height
+Dank Angle
+Dlight simulator
+
+SLOGAN
+Just a bit of fimulating
+"""
+
+
+__author__ = "Hao Tian"
 __version__ = "1.0.1"
 # Modified 2017-06-16 Hao Tian
 # Modified 2017-07-12 Adrien Hopkins
-
-### BUG REPORTS
-# FIXED: nav text doesn't appear above objectivemarker
-# FIXED: if altitude +/- 500 objectivealtitude, play sound_altitude
-# WONTFIX: Use perspective grid to create images for yoke
-# WONTFIX: shattered glass transparnt png on crash
-# WONTFIX: ignore controls if apleveloff == True
-# TODO: add a blue background to attitude indicator
-# WONTFIX: add framerate speedup (0.5 for 2x speed). divide every
-#   action by the speedup rate.
-# WONTFIX: output a log after flight
-# WONTFIX: generate a random background of green and blue squares
-# FIXED: BUG: Damaage has decimal when damaged by overspeed
-
-# ALTERNATE NAMES
-# Glide Slope
-# Departure As Filed
-# Hundred Above
-# Decision Height
-# Dank Angle
-# Dlight simulator
-
-# SLOGAN
-# Just a bit of fimulating
 
 
 ### OS RELATED STUFF
