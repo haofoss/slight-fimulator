@@ -10,7 +10,12 @@ sudo apt-get update && sudo apt-get install python python-pygame -y
 ## Usage
 ```
 cd slight-fimulator-master
-python stable.py
+python __init__.py
+
+OR
+
+(in a python program)
+import slight-fimulator-master
 ```
 
 | TO DO THIS               | PRESS THIS |
