@@ -14,8 +14,8 @@ python __init__.py
 
 OR
 
-(in a python program)
-import slight-fimulator-master
+(in a python program; this stuff must be in a folder called slight_fimulator.)
+import slight_fimulator
 ```
 
 | TO DO THIS               | PRESS THIS |
