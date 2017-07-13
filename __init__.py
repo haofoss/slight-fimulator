@@ -400,7 +400,7 @@ msg_stall = pygame.image.load("%s/Images/msg_stall.png" % PATH)
 msg_pullup = pygame.image.load("%s/Images/msg_pullup.png" % PATH)
 msg_warning = pygame.image.load("%s/Images/msg_warning.png" % PATH)
 msg_dontsink = pygame.image.load("%s/Images/msg_dontsink.png" % PATH)
-msg_terrain = pygame.image.load("%s/Images/msg_terrain.png" % PATH)
+##msg_terrain = pygame.image.load("%s/Images/msg_terrain.png" % PATH)
 
 startupmsg = """
 Slight Fimulator Copyright (C) 2017 Hao Tian
