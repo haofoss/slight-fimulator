@@ -14,7 +14,7 @@ python __init__.py
 
 OR
 
-(in a python program; this stuff must be in a folder called slight_fimulator.)
+(in a python program; this stuff must be in a folder called slight_fimulator)
 import slight_fimulator
 ```
 
