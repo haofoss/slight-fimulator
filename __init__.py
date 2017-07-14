@@ -63,7 +63,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1' # center the window.
 # how-to-designate-where-pygame-creates-the-game-window
 
 # Gets current filepath
-PATH = "%s/Images" % os.path.dirname(os.path.realpath(__file__))
+PATH = os.path.dirname(os.path.realpath(__file__))
 
 # events
 RUN = 10
