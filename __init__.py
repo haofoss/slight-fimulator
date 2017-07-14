@@ -51,7 +51,8 @@ import pygame
 
 
 __author__ = "Hao Tian"
-__version__ = "1.0.1"
+__credits__ = ["Adrien Hopkins"]
+__version__ = "1.0.2"
 # Modified 2017-06-16 Hao Tian
 # Modified 2017-07-12 Adrien Hopkins
 
