@@ -1,56 +1,69 @@
-import pygame
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+"""Slight Fimulator - Flight simlator in Python
+Copyright (C) 2017 Hao Tian
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+BUG REPORTS
+FIXED: nav text doesn't appear above objectivemarker
+FIXED: if altitude +/- 500 objectivealtitude, play sound_altitude
+WONTFIX: Use perspective grid to create images for yoke
+WONTFIX: shattered glass transparnt png on crash
+WONTFIX: ignore controls if apleveloff == True
+TODO: add a blue background to attitude indicator
+WONTFIX: add framerate speedup (0.5 for 2x speed). divide every
+  action by the speedup rate.
+WONTFIX: output a log after flight
+WONTFIX: generate a random background of green and blue squares
+FIXED: BUG: Damaage has decimal when damaged by overspeed
+
+ALTERNATE NAMES
+Glide Slope
+Departure As Filed
+Hundred Above
+Decision Height
+Dank Angle
+Dlight simulator
+
+SLOGAN
+Just a bit of fimulating
+"""
+
 import random
 import os
 import math
 
-
-##    Slight Fimulator - Flight simlator in Python
-##    Copyright (C) 2017 Hao Tian
-##
-##    This program is free software: you can redistribute it and/or modify
-##    it under the terms of the GNU General Public License as published by
-##    the Free Software Foundation, either version 3 of the License, or
-##    (at your option) any later version.
-##
-##    This program is distributed in the hope that it will be useful,
-##    but WITHOUT ANY WARRANTY; without even the implied warranty of
-##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##    GNU General Public License for more details.
-##
-##    You should have received a copy of the GNU General Public License
-##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import pygame
 
 
-# Version 1
+__author__ = "Hao Tian"
+__version__ = "1.0.1"
 # Modified 2017-06-16 Hao Tian
-
-### BUG REPORTS
-# FIXED: nav text doesn't appear above objectivemarker
-# FIXED: if altitude +/- 500 objectivealtitude, play sound_altitude
-# WONTFIX: Use perspective grid to create images for yoke
-# WONTFIX: shattered glass transparnt png on crash
-# WONTFIX: ignore controls if apleveloff == True
-# TODO: add a blue background to attitude indicator
-# WONTFIX: add framerate speedup (0.5 for 2x speed). divide every action by the speedup rate.
-# WONTFIX: output a log after flight
-# WONTFIX: generate a random background of green and blue squares
-# FIXED: BUG: Damaage has decimal when damaged by overspeed
-
-# ALTERNATE NAMES
-# Glide Slope
-# Departure As Filed
-# Hundred Above
-# Decision Height
-# Dank Angle
-# Dlight simulator
-
-# SLOGAN
-# Just a bit of fimulating
+# Modified 2017-07-12 Adrien Hopkins
 
 
 ### OS RELATED STUFF
 hostos = os.name # read operating system
-os.environ['SDL_VIDEO_CENTERED'] = '1' # center the window. source: https://stackoverflow.com/questions/5814125/how-to-designate-where-pygame-creates-the-game-window
+os.environ['SDL_VIDEO_CENTERED'] = '1' # center the window.
+# source: https://stackoverflow.com/questions/5814125/
+# how-to-designate-where-pygame-creates-the-game-window
+
+# Gets current filepath
+PATH = "%s/Images" % os.path.dirname(os.path.realpath(__file__))
 
 # events
 RUN = 10
@@ -127,7 +140,8 @@ def searchsublist(inputlist, searchfor):
 ##            return inputlist[loopnum][1]
 ##            break
 ##    else:
-##        print "no match DO NOT UNCOMMENT THIS FUNCTION", inputlist[loopnum][0], inputlist[loopnum][1]
+##        print "no match DO NOT UNCOMMENT THIS FUNCTION",
+##        print inputlist[loopnum][0], inputlist[loopnum][1]
 ##        loopnum += 1
 
 
@@ -191,7 +205,8 @@ def runwarnings():
 
 def approachingaltitude(tolerance):
     global objectivealtitude, altitude
-##    return (objectivealtitude - altitude) >= -tolerance or (altitude - objectivealtitude) <= tolerance
+##    return ((objectivealtitude - altitude) >= -tolerance
+##    or (altitude - objectivealtitude) <= tolerance)
     return abs(objectivealtitude - altitude) <= tolerance
 
 
@@ -251,43 +266,43 @@ else:
     fontlarge2 = pygame.sysfont.SysFont(None, 48)
 
 # images
-logo = pygame.image.load("logo.png")
+logo = pygame.image.load("%s/Images/logo.png" % PATH)
 logo = pygame.transform.scale(logo, (521, 178))
-logotext = pygame.image.load("logotext.png")
-titleprompt = pygame.image.load("titleprompt.png")
-gameoveroverlay = pygame.image.load("gameoveroverlay.png")
-yoke4 = pygame.image.load("yoke4.png")
-yoke3 = pygame.image.load("yoke3.png")
-yoke2 = pygame.image.load("yoke2.png")
-yoke1 = pygame.image.load("yoke1.png")
-yoke0 = pygame.image.load("yoke0.png")
-yoken1 = pygame.image.load("yoke-1.png")
-yoken2 = pygame.image.load("yoke-2.png")
-yoken3 = pygame.image.load("yoke-3.png")
-yoken4 = pygame.image.load("yoke-4.png")
+logotext = pygame.image.load("%s/Images/logotext.png" % PATH)
+titleprompt = pygame.image.load("%s/Images/titleprompt.png" % PATH)
+gameoveroverlay = pygame.image.load("%s/Images/gameoveroverlay.png" % PATH)
+yoke4 = pygame.image.load("%s/Images/yoke4.png" % PATH)
+yoke3 = pygame.image.load("%s/Images/yoke3.png" % PATH)
+yoke2 = pygame.image.load("%s/Images/yoke2.png" % PATH)
+yoke1 = pygame.image.load("%s/Images/yoke1.png" % PATH)
+yoke0 = pygame.image.load("%s/Images/yoke0.png" % PATH)
+yoken1 = pygame.image.load("%s/Images/yoke-1.png" % PATH)
+yoken2 = pygame.image.load("%s/Images/yoke-2.png" % PATH)
+yoken3 = pygame.image.load("%s/Images/yoke-3.png" % PATH)
+yoken4 = pygame.image.load("%s/Images/yoke-4.png" % PATH)
 
 # sounds
-sound_pullup = pygame.mixer.Sound("sound_pullup.wav")
-sound_terrain = pygame.mixer.Sound("sound_terrain.wav")
-sound_dontsink = pygame.mixer.Sound("sound_dontsink.wav")
+sound_pullup = pygame.mixer.Sound("%s/Sounds/sound_pullup.wav" % PATH)
+sound_terrain = pygame.mixer.Sound("%s/Sounds/sound_terrain.wav" % PATH)
+sound_dontsink = pygame.mixer.Sound("%s/Sounds/sound_dontsink.wav" % PATH)
 
-sound_stall = pygame.mixer.Sound("sound_stall.wav")
-sound_overspeed = pygame.mixer.Sound("sound_overspeed.wav")
-sound_bankangle = pygame.mixer.Sound("sound_bankangle.wav")
-sound_gear = pygame.mixer.Sound("sound_gear.wav")
+sound_stall = pygame.mixer.Sound("%s/Sounds/sound_stall.wav" % PATH)
+sound_overspeed = pygame.mixer.Sound("%s/Sounds/sound_overspeed.wav" % PATH)
+sound_bankangle = pygame.mixer.Sound("%s/Sounds/sound_bankangle.wav" % PATH)
+sound_gear = pygame.mixer.Sound("%s/Sounds/sound_gear.wav" % PATH)
  
-sound_config = pygame.mixer.Sound("sound_config.wav")
-sound_apdisconnect = pygame.mixer.Sound("sound_apdisconnect.wav")
-sound_altitude = pygame.mixer.Sound("sound_altitude.wav")
+sound_config = pygame.mixer.Sound("%s/Sounds/sound_config.wav" % PATH)
+sound_apdisconnect = pygame.mixer.Sound("%s/Sounds/sound_apdisconnect.wav" % PATH)
+sound_altitude = pygame.mixer.Sound("%s/Sounds/sound_altitude.wav" % PATH)
 
-sound_moonbase = pygame.mixer.Sound("sound_moonbase.wav")
+sound_moonbase = pygame.mixer.Sound("%s/Sounds/sound_moonbase.wav" % PATH)
 
 
 # PFD images and static text
-attitudetape = pygame.image.load("attitudetape.png")
+attitudetape = pygame.image.load("%s/Images/attitudetape.png" % PATH)
 attitudetapex = 135 # orig: 135, new: -223
 attitudetapey = 150 # orig: 150, new: -637
-attitudecrosshair = pygame.image.load("attitudecrosshair.png")
+attitudecrosshair = pygame.image.load("%s/Images/attitudecrosshair.png" % PATH)
 attituderecttop2 = pygame.rect.Rect(135, 0, 350, 100) # 284
 attituderecttop = pygame.rect.Rect(135, 100, 400, 140) #284
 attituderectleft = pygame.rect.Rect(135, 150, 50, 350)
@@ -309,8 +324,8 @@ verticalspeedlabel = font.render("VERT SPD", 1, white)
 # x: 560 to 1260
 # y: 30 to 730
 
-navmarker = pygame.image.load("navmarker.png")
-objectivemarker = pygame.image.load("objectivemarker.png")
+navmarker = pygame.image.load("%s/Images/navmarker.png" % PATH)
+objectivemarker = pygame.image.load("%s/Images/objectivemarker.png" % PATH)
 
 x = 963.917941 # x = 891 for center
 y = 430.6969420
@@ -335,7 +350,8 @@ def generateobjective(objectivealtituderangemin, objectivealtituderangemax):
     objectivemarkerrect.y = objectivey
 
     # generate objectivex and objectivey
-    # while navmarker collides with objectivemarker, or objective coordinates aren't in range
+    # while navmarker collides with objectivemarker,
+    # or objective coordinates aren't in range
     while (navmarkerrect.colliderect(objectivemarkerrect) == True or
           (objectivex > 700 and objectivex < 1100) == False or
           (objectivey > 130 and objectivey < 640) == False):
@@ -351,7 +367,8 @@ def generateobjective(objectivealtituderangemin, objectivealtituderangemax):
         objectivemarkerrect.x = objectivex
         objectivemarkerrect.y = objectivey
 
-    objectivealtitude = random.randrange(objectivealtituderangemin, objectivealtituderangemax) 
+    objectivealtitude = random.randrange(objectivealtituderangemin,
+            objectivealtituderangemax) 
 
 
 # set coordinates of the initial objective
@@ -367,23 +384,23 @@ objectiveyuser = objectivey - 10
 
 # NAV images and static text
 navarea = pygame.rect.Rect(560, 30, 700, 700)
-navcircle = pygame.image.load("navcircle.png")
+navcircle = pygame.image.load("%s/Images/navcircle.png" % PATH)
 locationlabel = font.render("LOCATION", 1, white)
 throttlelabel = font.render("THR", 1, white)
 throttlerect100 = pygame.rect.Rect(155, 380, 20, 100)
 throttlerect130 = pygame.rect.Rect(155, 350, 20, 130)
 
 # warnings
-msg_apengaged = pygame.image.load("msg_apengaged.png")
-msg_apdisconnect = pygame.image.load("msg_apdisconnect.png")
-msg_bankangle = pygame.image.load("msg_bankangle.png")
-msg_over_g = pygame.image.load("msg_over_g.png")
-msg_overspeed = pygame.image.load("msg_overspeed.png")
-msg_stall = pygame.image.load("msg_stall.png")
-msg_pullup = pygame.image.load("msg_pullup.png")
-msg_warning = pygame.image.load("msg_warning.png")
-msg_dontsink = pygame.image.load("msg_dontsink.png")
-##msg_terrain = pygame.image.load("msg_terrain.png)
+msg_apengaged = pygame.image.load("%s/Images/msg_apengaged.png" % PATH)
+msg_apdisconnect = pygame.image.load("%s/Images/msg_apdisconnect.png" % PATH)
+msg_bankangle = pygame.image.load("%s/Images/msg_bankangle.png" % PATH)
+msg_over_g = pygame.image.load("%s/Images/msg_over_g.png" % PATH)
+msg_overspeed = pygame.image.load("%s/Images/msg_overspeed.png" % PATH)
+msg_stall = pygame.image.load("%s/Images/msg_stall.png" % PATH)
+msg_pullup = pygame.image.load("%s/Images/msg_pullup.png" % PATH)
+msg_warning = pygame.image.load("%s/Images/msg_warning.png" % PATH)
+msg_dontsink = pygame.image.load("%s/Images/msg_dontsink.png" % PATH)
+##msg_terrain = pygame.image.load("%s/Images/msg_terrain.png" % PATH)
 
 startupmsg = """
 Slight Fimulator Copyright (C) 2017 Hao Tian
@@ -397,7 +414,8 @@ under certain conditions; see COPYING file
 
 print startupmsg
 
-pygame.mixer.music.load("chilled-eks.ogg") # TODO: does vorbis play on windows?
+# TODO: does vorbis play on windows?
+pygame.mixer.music.load("%s/Sounds/chilled-eks.ogg" % PATH) 
 pygame.mixer.music.play(-1)
 
 while True:
@@ -421,7 +439,7 @@ while True:
 ##### MAIN LOOP ###
 pygame.mouse.set_pos(1279, 1023)
 pygame.mixer.music.stop()
-pygame.mixer.music.load("chip-respect.ogg")
+pygame.mixer.music.load("%s/Sounds/chip-respect.ogg" % PATH)
 pygame.mixer.music.play(-1)
 
 while exitcode == 0:
@@ -455,7 +473,8 @@ while exitcode == 0:
     locationytext = font.render("LONG: %.7f" % yuser, 1, white)
     objectivextext = font.render("X  : " + str(objectivex), 1, white)
     objectivextext = font.render("Y  : " + str(objectivey), 1, white)
-    objectivealtitudetext = font.render("OBJ ALT: " + str(objectivealtitude) + " FT", 1, white)
+    objectivealtitudetext = font.render("OBJ ALT: " + str(objectivealtitude)
+            + " FT", 1, white)
     altimetertext = font.render("ALTIMETER: " + str(altimeter), 1, white)
     scoretext = font.render("SCORE: " + str(score), 1, white)
 
@@ -468,7 +487,8 @@ while exitcode == 0:
     screen.blit(damagetext, (30, 450))
 
     # vertical speed bar
-    verticalspeedrect = pygame.rect.Rect(375, 365, 20, -verticalspeedsec * 2.8) # * 2 for conservative
+    verticalspeedrect = pygame.rect.Rect(375, 365, 20, -verticalspeedsec * 2.8)
+    # * 2 for conservative
 
     # determine color for vertical speed rectangle    
     if verticalspeedsec < 0:
@@ -552,19 +572,24 @@ while exitcode == 0:
 
 
         ### CONTROLS FOR ROLL ###
-        # TODO: use "roll" and "rollchange". add rollchange to total roll, so aircraft can be rolled infinitely. wrap around at 360.
+        # TODO: use "roll" and "rollchange". add rollchange to total roll,
+        # so aircraft can be rolled infinitely. wrap around at 360.
         
         # roll right
         if keys[pygame.K_RIGHT]:
             if controlroll < 4:
                 controlroll += 1 # increase roll
-                roll = rollresponses[searchsublist(rollresponses, controlroll)][1] # get degree of bank for this yoke position
+                roll = rollresponses[searchsublist(rollresponses,
+                        controlroll)][1]
+                # get degree of bank for this yoke position
 
         # roll left  # TODO: change to elif?
         if keys[pygame.K_LEFT]:
             if controlroll > -4:
                 controlroll -= 1 # decrease roll
-                roll = rollresponses[searchsublist(rollresponses, controlroll)][1] # get degree of bank for this yoke position
+                roll = rollresponses[searchsublist(rollresponses,
+                        controlroll)][1]
+                # get degree of bank for this yoke position
 
         # compass degree wrap around
         if (heading + roll) < 0: # wrap around from 0 to 359
@@ -584,7 +609,8 @@ while exitcode == 0:
             elif controlpitch < 0:
                 controlpitch += 1
 
-            # TODO: to make this faster, change roll to controlroll, += 1, -= 1.
+            # TODO: to make this faster, change roll to controlroll,
+            # += 1, -= 1.
             if roll > 10:
                 roll -= 10
             elif roll > 0:
@@ -680,7 +706,8 @@ while exitcode == 0:
             status = "Be careful not to stall."
             
         # too low terrain
-        elif altitude < 2000 and verticalspeedsec >= -20: # and (throttle <= 40):
+        elif altitude < 2000 and verticalspeedsec >= -20:
+            # and (throttle <= 40):
             if warn["terrainloop"] == True:
                 warn["terrain"] = True
                 warn["terrainloop"] = False
@@ -807,7 +834,8 @@ while exitcode == 0:
 
         
         ### UPDATE VARIABLES
-        verticalspeed = verticalspeedsec * 60 # calculate vertical speed, which is displayed on PFD
+        verticalspeed = verticalspeedsec * 60 # calculate vertical speed,
+        # which is displayed on PFD
         xuser = x - 350
         yuser = y - 10
 
@@ -815,7 +843,10 @@ while exitcode == 0:
         statustext = fontlarge.render(status, 1, white)
         screen.blit(statustext, (25, 700))
         
-        print "HDG:" + str(heading) + " ALT:" + str(altitude) + " VS:" + str(verticalspeedsec) + " CP:" + str(controlpitch) + " R:" + str(roll) + " CR:" + str(controlroll) + " X:" + str(x) + " Y:" + str(y)
+        print "HDG:" + str(heading) + " ALT:" + str(altitude) + " VS:" \
+                + str(verticalspeedsec) + " CP:" + str(controlpitch) \
+                + " R:" + str(roll) + " CR:" + str(controlroll) + " X:" \
+                + str(x) + " Y:" + str(y)
 
         # update screen once every second so warnings work
         pygame.display.flip()
@@ -857,7 +888,8 @@ exitreasons = [
                 "You crashed your aircraft. Your score was %i." % score,
                 "Left the operation area. Your score was %i." % score,
                 "The aircraft was overstressed. Your score was %i." % score,
-                "The aircraft exceeded its service ceiling altitude. Your score was %i." % score,
+                "The aircraft exceeded its service ceiling altitude. \
+Your score was %i." % score,
                 "Exited with exitcode 7 (unexpected). Please report."
                 ]
 

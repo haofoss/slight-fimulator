@@ -1,4 +1,4 @@
-# Slight Fimulator
+# Slight Fimulator Version 1.0.1
 A flight simulator written in Python.
 
 ## Dependencies
@@ -9,8 +9,12 @@ sudo apt-get update && sudo apt-get install python python-pygame -y
 
 ## Usage
 ```
-cd slight-fimulator-master
-python stable.py
+python slight-fimulator-master
+
+OR
+
+(in a python program in the same directory as the FOLDER; this stuff must be in a folder called slight_fimulator)
+import slight_fimulator
 ```
 
 | TO DO THIS               | PRESS THIS |
