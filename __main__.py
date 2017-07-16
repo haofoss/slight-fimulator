@@ -6,4 +6,4 @@
 (as in, "python slight-fimulator-master")
 """
 
-import __init__
+import main
