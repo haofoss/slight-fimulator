@@ -45,7 +45,7 @@ import pygame
 
 __author__ = "Hao Tian"
 __credits__ = ["Adrien Hopkins"]
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 # Modified 2017-06-16 Hao Tian
 # Modified 2017-07-12 Adrien Hopkins
 
@@ -321,7 +321,7 @@ verticalspeedlabel = font.render("VERT SPD", 1, white)
 navmarker = pygame.image.load("%s/Images/navmarker.png" % PATH)
 objectivemarker = pygame.image.load("%s/Images/objectivemarker.png" % PATH)
 
-x = 963.0 # x = 891 for center
+x = 891.0 # x = 891 for center
 y = 430.0
 
 
