@@ -8,4 +8,4 @@ are no dashes.
 (as in, "import slight_fimulator")
 """
 
-import main
+from main import *
