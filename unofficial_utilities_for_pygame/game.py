@@ -70,7 +70,6 @@ class Game(object):
             # Zip Archive Found!
             self.resources = zipfile.ZipFile(self.resources_path)
             for filename in self.resources.namelist():
-                print(filename)
                 if filename.endswith('/'):
                     pass # Is a folder, don't extract
                 elif filename.startswith('Images/'):

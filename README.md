@@ -1,4 +1,4 @@
-# Slight Fimulator Version 2.0.0-pre-alpha
+# Slight Fimulator Version 1.0.3
 A flight simulator written in Python.
 
 ## Dependencies
@@ -26,6 +26,7 @@ import slight_fimulator
 | Bank right                   | →              |
 | Set throttle to OFF          | F1             |
 | Decrease throttle            | F2             |
-| Increase throttle            | F3             |
-| Set throttle to FULL         | F4             |
+| Set throttle to 50%          | F3             |
+| Increase throttle            | F4             |
+| Set throttle to FULL         | F5             |
 | Center controls and throttle | Z              |

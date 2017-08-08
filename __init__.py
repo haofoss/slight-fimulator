@@ -29,12 +29,6 @@ __author__ = "Hao Tian and Adrien Hopkins"
 __credits__ = None
 __version__ = "2.0.0-pre-alpha"
 
-__all__ = [
-    "game",
-    "GameWindow", "Airplane", "Objective", "Airspace",
-    "PATH"
-]
-
 import os
 
 import game
