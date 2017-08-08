@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-"""Allows you to run the package as a program
+"""Runs the package."""
 
-(as in, "python slight-fimulator-master")
-"""
+import game
 
-import main
+screen_size = (1280, 960)
+
+if __name__ == '__main__':
+    window = game.GameWindow(size=screen_size)
+    window.mainloop()
