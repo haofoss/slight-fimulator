@@ -27,7 +27,7 @@ Just a bit of fimulating
 
 __author__ = "Hao Tian and Adrien Hopkins"
 __credits__ = None
-__version__ = "2.0.0-pre-alpha"
+__version__ = "2.0.0-alpha.1"
 
 import os
 
