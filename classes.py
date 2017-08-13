@@ -125,10 +125,11 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
                 self.pitch))
         self.vertical_velocity = self.speed * math.sin(math.radians(
                 self.pitch))
+        if self.vertical_velocity == -0.0: self.vertical_velocity = 0
 
         # atall and gravity
         if self.speed <= 100:
-            if not window.ignore_warnings:
+            if self.altitude != 0:
                 window.warnings['stall'] = True
             self.max_vert_roll = max((self.speed-50) / 12.5, 0)
         else: self.max_vert_roll = 4
@@ -372,7 +373,8 @@ class Airspace(pygame.rect.Rect):
                 objective_correct[1] = True
         self.objectives.add(objective)
 
-    def collided(self, airplane, objective, altitude_tolerance=30):
+    def collided(self, airplane, objective,
+            altitude_tolerance=ALTITUDE_TOLERANCE):
         """Tests if a airplane collides with an objective."""
         return (airplane.rect.colliderect(objective.rect)
                 and abs(objective.altitude - airplane.altitude)
@@ -713,21 +715,22 @@ Your score was %i.",
         if self.warnings["pullup"] and not self.ignore_warnings:
             self.screen.blit(self.images['msg_pullup'],
                     (self.size[0]*5/32, self.size[1]*49/96))
-        elif self.warnings["terrain"] and not self.ignore_warnings:
+        if self.warnings["terrain"] and not self.ignore_warnings:
             self.screen.blit(self.images['msg_warning'],
                     (self.size[0]*187/1280, self.size[1]*7/40))
-        elif self.warnings["stall"]:
+        if self.warnings["stall"]:
             self.screen.blit(self.images['msg_stall'],
                     (self.size[0]*33/1280, self.size[1]*491/960))
-        elif self.warnings["dontsink"] and not self.ignore_warnings:
+        if self.warnings["dontsink"] and not self.ignore_warnings:
             self.screen.blit(self.images['msg_dontsink'],
                     (self.size[0]*19/80, self.size[1]*109/192))
-        elif self.warnings["bankangle"]:
+        if self.warnings["bankangle"]:
             self.screen.blit(self.images['msg_bankangle'],
                     (self.size[0]/40, self.size[1]*109/192))
-        elif self.warnings["overspeed"]:
+        if self.warnings["overspeed"]:
             self.screen.blit(self.images['msg_overspeed'],
                     (self.size[0]*73/256, self.size[1]*49/96))
+        # autopilot message
         if self.plane.ap_enabled:
             self.screen.blit(self.images['msg_apengaged'],
                     (self.size[0]*17/128, self.size[1]*11/96))
