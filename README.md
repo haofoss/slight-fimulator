@@ -11,11 +11,6 @@ Uses Unofficial Utilities for Pygame v2.1.0 by @MasterofNumbers17 (pre-installed
 ## Usage
 ```
 python slight-fimulator-master
-
-OR
-
-(in a python program in the same directory as the FOLDER; this stuff must be in a folder called slight_fimulator)
-import slight_fimulator
 ```
 
 | TO DO THIS                   | PRESS THIS     |
