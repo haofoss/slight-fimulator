@@ -1,4 +1,4 @@
-# Slight Fimulator Version 1.0.3
+# Slight Fimulator Version 1.0.5
 A flight simulator written in Python.
 
 ## Dependencies
