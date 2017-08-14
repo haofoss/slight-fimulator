@@ -31,7 +31,7 @@ from __future__ import division, print_function
 
 __author__ = "Hao Tian and Adrien Hopkins"
 __credits__ = None
-__version__ = "2.0.0-rc.1"
+__version__ = "2.0.0"
 
 import os
 
