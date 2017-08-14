@@ -4,6 +4,8 @@ A flight simulator written in Python.
 ## Dependencies
 Requires Python 2, Pygame
 
+This command installs them on Linux:
+
 `sudo apt-get update && sudo apt-get install python python-pygame -y`
 
 Uses Unofficial Utilities for Pygame v2.1.0 by @MasterofNumbers17 (pre-installed)
