@@ -592,8 +592,10 @@ Your score was %i.",
         attitude_tape_rect = attitude_tape.get_rect()
         attitude_tape_rect.center = (self.size[0]*7/32,
                 self.size[1]*9/24)
-        offset_y = self.size[1]*3/1600*self.plane.pitch
-        offset_x = math.tan(math.radians(self.plane.roll)) * offset_y
+        offset_total = (attitude_tape_rect.height * 3/1600 * self.size[1]
+                /attitude_tape_rect.height * self.plane.pitch)
+        offset_x = math.sin(math.radians(self.plane.roll)) * offset_total
+        offset_y = math.cos(math.radians(self.plane.roll)) * offset_total
         attitude_tape_rect.x += offset_x
         attitude_tape_rect.y += offset_y
         self.screen.blit(attitude_tape, attitude_tape_rect)
