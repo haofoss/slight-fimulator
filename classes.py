@@ -587,7 +587,7 @@ Your score was %i.",
         self.closest_objective = closest_objective
             
         # attitude tape
-        attitude_tape = pygame.transform.rotate(self.images['attitudetape'],
+        attitude_tape = pygame.transform.rotate(self.images['attitudetape-old'],
                 self.plane.roll)
         attitude_tape_rect = attitude_tape.get_rect()
         attitude_tape_rect.center = (self.size[0]*7/32,

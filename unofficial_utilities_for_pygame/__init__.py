@@ -23,7 +23,7 @@ import game
 import sprite
 
 __author__ = "Adrien Hopkins"
-__version__ = "2.1.0"
+__version__ = "3.0.0"
 
 Game = game.Game
 BG_PRESETS = Game.BG_PRESETS
