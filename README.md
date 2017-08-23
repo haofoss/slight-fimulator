@@ -1,4 +1,4 @@
-# Slight Fimulator Version 2.0.1
+# Slight Fimulator Version 2.0.2
 A flight simulator written in Python.
 This is @MasterofNumbers17's Edition.
 
@@ -9,12 +9,11 @@ This command installs them on Linux:
 
 `sudo apt-get update && sudo apt-get install python python-pygame -y`
 
-Uses Unofficial Utilities for Pygame v2.1.0 by @MasterofNumbers17 (pre-installed)
+Uses Unofficial Utilities for Pygame v3.0.0 by @MasterofNumbers17 (pre-installed)
 
 ## Usage
-```
-python slight-fimulator-master
-```
+
+`python slight-fimulator-master`
 
 | TO DO THIS                   | PRESS THIS     |
 |------------------------------|----------------|
