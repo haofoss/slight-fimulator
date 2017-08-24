@@ -1,9 +1,9 @@
-# Slight Fimulator Version 2.0.2
+# Slight Fimulator Version 2.0.3
 A flight simulator written in Python.
 This is @MasterofNumbers17's Edition.
 
 ## Dependencies
-Requires Python 2, Pygame
+Requires Python 2 or 3, Pygame (All commands shown use Python 2)
 
 This command installs them on Linux:
 
