@@ -26,18 +26,22 @@ SLOGAN
 Just a bit of fimulating
 """
 
-# Installs Python 3 division and print behaviour
-from __future__ import division, print_function
+# Installs Python 3 division, print and import behaviour
+from __future__ import division, print_function, absolute_import
 
 __author__ = "Hao Tian and Adrien Hopkins"
-__credits__ = None
 __version__ = "2.0.3"
 
 import os
 
-from classes import *
-from functions import *
-from constants import *
+try:
+    from classes import *
+    from functions import *
+    from constants import *
+except:
+    from .classes import *
+    from .functions import *
+    from .constants import *
 
 # Gets current filepath
 PATH = os.path.dirname(os.path.realpath(__file__))

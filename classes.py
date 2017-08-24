@@ -28,10 +28,16 @@ import time
 
 import pygame
 
-import unofficial_utilities_for_pygame as utils
-from __init__ import __author__, __credits__, __version__
-from constants import *
-from functions import *
+try:
+    import unofficial_utilities_for_pygame as utils
+    from __init__ import __author__, __version__
+    from constants import *
+    from functions import *
+except:
+    from . import unofficial_utilities_for_pygame as utils
+    from .__init__ import __author__, __version__
+    from .constants import *
+    from .functions import *
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
