@@ -1,4 +1,4 @@
-# Slight Fimulator Version 2.0.3
+# Slight Fimulator Version 2.0.4
 A flight simulator written in Python.
 This is @MasterofNumbers17's Edition.
 

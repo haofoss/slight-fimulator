@@ -593,10 +593,10 @@ Your score was %i.",
         self.closest_objective = closest_objective
             
         # attitude tape
-        attitude_tape = pygame.transform.rotate(self.images['attitudetape-old'],
-                self.plane.roll)
+        attitude_tape = pygame.transform.rotate(
+                self.images['attitudetape-bg'], self.plane.roll)
         attitude_tape_rect = attitude_tape.get_rect()
-        attitude_tape_rect.center = (self.size[0]*7/32,
+        attitude_tape_rect.center = (self.size[0]*55/256,
                 self.size[1]*9/24)
         offset_total = (attitude_tape_rect.height * 3/1600 * self.size[1]
                 /attitude_tape_rect.height * self.plane.pitch)
@@ -604,7 +604,20 @@ Your score was %i.",
         offset_y = math.cos(math.radians(self.plane.roll)) * offset_total
         attitude_tape_rect.x += offset_x
         attitude_tape_rect.y += offset_y
+
+        attitude_tape_overlay = pygame.transform.rotate(
+                self.images['attitudetape-overlay'], self.plane.roll)
+        attitude_tape_overlay_rect = attitude_tape_overlay.get_rect()
+        attitude_tape_overlay_rect.center = (self.size[0]*55/256,
+                self.size[1]*9/24)
+        offset_total = (attitude_tape_overlay_rect.height*3/1600*self.size[1]
+                /attitude_tape_overlay_rect.height * self.plane.pitch)
+        offset_x = math.sin(math.radians(self.plane.roll)) * offset_total
+        offset_y = math.cos(math.radians(self.plane.roll)) * offset_total
+        attitude_tape_overlay_rect.x += offset_x
+        attitude_tape_overlay_rect.y += offset_y
         self.screen.blit(attitude_tape, attitude_tape_rect)
+        self.screen.blit(attitude_tape_overlay, attitude_tape_overlay_rect)
         # surrounding panels
         pygame.draw.rect(self.screen, self.colors['panel'],
                 (self.size[0]*5/256, self.size[1]*5/48,
