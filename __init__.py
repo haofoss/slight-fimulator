@@ -27,21 +27,14 @@ Just a bit of fimulating
 
 __author__ = "Hao Tian and Adrien Hopkins"
 __credits__ = None
-__version__ = "2.0.0-alpha.2"
+__version__ = "2.0.0-rc.1"
 
 import os
 
-import game
+from game import *
 
 # Gets current filepath
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 # Centers the window on the screen
 os.environ['SDL_VIDEO_CENTERED'] = '1'
-
-try:
-    GameWindow = game.GameWindow
-    Airplane = game.Airplane
-    Objective = game.Objective
-    Airspace = game.Airspace
-except: pass

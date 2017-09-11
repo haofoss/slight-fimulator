@@ -31,5 +31,5 @@ import game
 screen_size = (1280, 960)
 
 if __name__ == '__main__':
-    window = game.GameWindow(size=screen_size)
+    window = game.Game(size=screen_size)
     window.mainloop()

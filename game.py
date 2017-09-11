@@ -166,7 +166,9 @@ class Airplane(utils.ImprovedSprite):
         # overspeed damage
         if self.speed > 880:
             window.warnings['overspeed'] = True
-            damage += (self.speed - 880) ** 2 / 242000 / window.fps
+            damage += (self.speed - 880) ** 2 / 60500 / window.fps
+        if self.throttle > 100:
+            damage += (self.throttle - 100) ** 2 / 781.25 / window.fps
 
         # height warnings
         if self.altitude <= 1600:
@@ -320,14 +322,16 @@ class Airspace(pygame.rect.Rect):
                 self.generate_objective(collision.image)
                 window.status = ["Fly to the objective."]
 
-    def add_plane(self, plane):
+    def add_plane(self, plane, player_id=None):
         """Adds a plane to the airspace.
 
         Creates a new airplane if an image is supplied."""
         if type(plane) != Airplane:
             plane = Airplane(plane, self.width/2, self.height/2,
-                    START_ALTITUDE, airspace_dim=self.size)
+                    START_ALTITUDE, airspace_dim=self.size,
+                    player_id=player_id)
         self.planes.add(plane)
+        return plane
 
     def generate_objective(self, image):
         """Generates an objective."""
@@ -373,11 +377,12 @@ class Airspace(pygame.rect.Rect):
                     and rect.bottom <= self.bottom)
 
 
-class GameWindow(utils.Game):
+class Game(utils.Game):
     """The main window for the game."""
     GAME_STAGES = {}
     GAME_LOOPS = {}
     DEFAULT_SIZE = (1280, 960)
+    NEXT_ID = 0
     EXIT_TITLES = [
             "UNEXPECTED",
             "Congratulations",
@@ -399,7 +404,7 @@ class GameWindow(utils.Game):
 Your score was %i.",
             "Exited with exitcode 7 (unexpected). Please report."
     ]
-    def __init__(self, size=DEFAULT_SIZE):
+    def __init__(self, size=DEFAULT_SIZE, player_id=None):
         """Initializes the instance. Does not start the game."""
         # Finds a folder if possible, otherwise tries a zip archive
         if "resources" in os.listdir(PATH):
@@ -407,13 +412,15 @@ Your score was %i.",
         elif "resources.zip" in os.listdir(PATH):
             resources_path = "%s/resources.zip" % PATH
         else: raise Exception("No resources found!")
-        super(GameWindow, self).__init__(
+        super(Game, self).__init__(
                 resources_path=resources_path,
                 title="Slight Fimulator v%s" % __version__,
                 icontitle="Slight Fimulator",
                 size=size, bg=utils.Game.BG_PRESETS['bg-color'])
         self.max_fps = 60
         self.prev_size = self.size
+        if player_id == None: self.id = Game.NEXT_ID; Game.NEXT_ID += 1
+        else: self.id = player_id
 
     # -------------------------------------------------------------------------
     # STARTUP CODE
@@ -436,7 +443,8 @@ Your score was %i.",
         """Sets up the variables."""
         self.airspace = Airspace(self.size[0]*7/16, self.size[1]/24,
                 self.size[0]*35/64, self.size[1]*35/48)
-        self.airspace.add_plane(self.images['navmarker'])
+        self.plane = self.airspace.add_plane(self.images['navmarker'],
+                player_id=self.id)
         self.planes = self.airspace.planes # Another name for the same object
         self.objectives = self.airspace.objectives
         self.airspace.generate_objective(self.images['objectivemarker'])
@@ -548,16 +556,31 @@ HDG:\tPITCH:\tCR:\tROLL:\tVCR:\tPTS:\tDMG:\t")
         self.closest_objective = closest_objective
             
         # attitude tape
-        attitude_tape = pygame.transform.rotate(self.images['attitudetape'],
-                plane.roll)
+        attitude_tape = pygame.transform.rotate(
+                self.images['attitudetape-bg'], self.plane.roll)
         attitude_tape_rect = attitude_tape.get_rect()
-        attitude_tape_rect.center = (self.size[0]*7/32,
+        attitude_tape_rect.center = (self.size[0]*55/256,
                 self.size[1]*9/24)
-        offset_y = self.size[1]*3/160*plane.vertical_roll_level
-        offset_x = math.tan(math.radians(plane.roll)) * offset_y
+        offset_total = (attitude_tape_rect.height * 3/1600 * self.size[1]
+                /attitude_tape_rect.height * self.plane.pitch)
+        offset_x = math.sin(math.radians(self.plane.roll)) * offset_total
+        offset_y = math.cos(math.radians(self.plane.roll)) * offset_total
         attitude_tape_rect.x += offset_x
         attitude_tape_rect.y += offset_y
+
+        attitude_tape_overlay = pygame.transform.rotate(
+                self.images['attitudetape-overlay'], self.plane.roll)
+        attitude_tape_overlay_rect = attitude_tape_overlay.get_rect()
+        attitude_tape_overlay_rect.center = (self.size[0]*55/256,
+                self.size[1]*9/24)
+        offset_total = (attitude_tape_overlay_rect.height*3/1600*self.size[1]
+                /attitude_tape_overlay_rect.height * self.plane.pitch)
+        offset_x = math.sin(math.radians(self.plane.roll)) * offset_total
+        offset_y = math.cos(math.radians(self.plane.roll)) * offset_total
+        attitude_tape_overlay_rect.x += offset_x
+        attitude_tape_overlay_rect.y += offset_y
         self.screen.blit(attitude_tape, attitude_tape_rect)
+        self.screen.blit(attitude_tape_overlay, attitude_tape_overlay_rect)
         # surrounding panel
         pygame.draw.rect(self.screen, self.colors['panel'],
                 (self.size[0]*5/256, self.size[1]*5/48,
@@ -662,16 +685,16 @@ HDG:\tPITCH:\tCR:\tROLL:\tVCR:\tPTS:\tDMG:\t")
         self.draw_text("%.1f KTS" % (plane.speed / 0.6),
                 self.size[0]*5/16, self.size[1]*13/48,
                 color_id='white', mode='topleft')
-        self.draw_text("GRAVITY",
+        self.draw_text("STL ALT LOSS",
                 self.size[0]*5/16, self.size[1]*17/48,
                 color_id='white', mode='topleft')
-        self.draw_text("%.1f FT/H" % (-plane.gravity),
+        self.draw_text("%.1f FT/S" % (-plane.gravity),
                 self.size[0]*5/16, self.size[1]*3/8,
                 color_id='white', mode='topleft')
         self.draw_text("VERT SPD",
                 self.size[0]*5/16, self.size[1]*11/24,
                 color_id='white', mode='topleft')
-        self.draw_text("%.1f FT/H" % (plane.vertical_velocity),
+        self.draw_text("%.1f FT/S" % (plane.vertical_velocity),
                 self.size[0]*5/16, self.size[1]*23/48,
                 color_id='white', mode='topleft')
         
@@ -744,10 +767,10 @@ HDG:\tPITCH:\tCR:\tROLL:\tVCR:\tPTS:\tDMG:\t")
                 if plane.vertical_roll_level > 4:
                     plane.vertical_roll_level = 4
             if keys[pygame.K_F2]:
-                plane.throttle -= (4.0 / self.fps)
+                plane.throttle -= (8.0 / self.fps)
                 if plane.throttle < 0: plane.throttle = 0
             elif keys[pygame.K_F3]:
-                plane.throttle += (4.0 / self.fps)
+                plane.throttle += (8.0 / self.fps)
                 if plane.throttle > 130: plane.throttle = 130
 
             for event in self.events:

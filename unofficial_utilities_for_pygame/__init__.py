@@ -19,11 +19,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
-import game
-import sprite
+from __future__ import absolute_import
 
+if __name__ == '__main__':
+    import game
+    import sprite
+else:
+    from . import game, sprite
+    
 __author__ = "Adrien Hopkins"
-__version__ = "2.1.0"
+__version__ = "3.0.1"
 
 Game = game.Game
 BG_PRESETS = Game.BG_PRESETS

@@ -95,6 +95,7 @@ class Game(object):
                 elif filename in ['colors.txt', 'colours.txt']:
                     colors_file = self.resources.open(filename)
                     for line in colors_file.readlines():
+                        line = str(line.decode('utf-8'))
                         if line.strip() == '': continue
                         elif line.strip() [0] == '#': continue
                         colorname, color = line.split('=')
@@ -104,6 +105,7 @@ class Game(object):
                 elif filename == 'fonts.txt':
                     fonts_file = self.resources.open(filename)
                     for line in fonts_file.readlines():
+                        line = str(line.decode('utf-8'))
                         if line.strip() == '': continue
                         elif line.strip() [0] == '#': continue
                         fontname, font = line.split('=')
