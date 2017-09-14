@@ -1,6 +1,6 @@
 # Slight Fimulator Version 2.0.0
 A flight simulator written in Python.
-Check out @MasterofNumbers17's ;fork](https://github.com/MasterofNumbers17/slight-fimulator)!
+Check out @MasterofNumbers17's [fork](https://github.com/MasterofNumbers17/slight-fimulator)!
 
 ## Dependencies
 Requires Python 2 or 3, Pygame.  All shown commands use Python 2.
