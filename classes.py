@@ -165,7 +165,9 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         # overspeed damage
         if self.speed > 375:
             window.warnings['overspeed'] = True
-            damage += (self.speed - 375) ** 2 / 100000 / window.fps
+            damage += (self.speed - 375) ** 2 / 25000 / window.fps
+        if self.throttle > 75:
+            damage += (self.throttle - 75) ** 2 / 1000 / window.fps
 
         # height warnings
         if self.altitude <= 500 and not window.ignore_warnings:
@@ -778,10 +780,10 @@ Your score was %i.",
                 if self.plane.vertical_roll_level > 4:
                     self.plane.vertical_roll_level = 4
             if keys[pygame.K_F2]:
-                self.plane.throttle -= (4 / self.fps)
+                self.plane.throttle -= (8 / self.fps)
                 if self.plane.throttle < 0: self.plane.throttle = 0
             elif keys[pygame.K_F4]:
-                self.plane.throttle += (4 / self.fps)
+                self.plane.throttle += (8 / self.fps)
                 if self.plane.throttle > 100: self.plane.throttle = 100
 
             for event in self.events:

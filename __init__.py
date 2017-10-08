@@ -30,7 +30,7 @@ Just a bit of fimulating
 from __future__ import division, print_function, absolute_import
 
 __author__ = "Hao Tian and Adrien Hopkins"
-__version__ = "2.0.4"
+__version__ = "2.0.5"
 
 import os
 
