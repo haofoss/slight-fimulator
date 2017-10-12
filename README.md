@@ -1,6 +1,6 @@
 # Slight Fimulator Version 2.0.5
 A flight simulator written in Python.
-This is @MasterofNumbers17's Edition (The [original](https://github.com/haofoss/slight-fimulator) is by @haofoss.
+This is @MasterofNumbers17's Edition (The [original](https://github.com/haofoss/slight-fimulator) is by @haofoss).
 
 ## Dependencies
 Requires Python 2 or 3, Pygame (All commands shown use Python 2)
