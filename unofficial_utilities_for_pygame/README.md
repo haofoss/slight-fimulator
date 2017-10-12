@@ -1,4 +1,4 @@
-# Unofficial Utilities for Pygame Version 3.0.1
+# Unofficial Utilities for Pygame Version 3.0.2
 An unofficial module that makes pygame coding easier.
 
 # Dependecies
