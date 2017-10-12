@@ -7,7 +7,7 @@ Requires Python 2 or 3, Pygame.  All shown commands use Python 2.
 
 `sudo apt-get update && sudo apt-get install python python-pygame -y`
 
-Uses Unofficial Utilities for Pygame v3.0.2 by MasterofNumbers17 (pre-installed)
+Uses Unofficial Utilities for Pygame v3.0.1 by MasterofNumbers17 (pre-installed)
 
 ## Usage
 ```
