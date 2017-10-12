@@ -170,10 +170,11 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
             damage += (self.throttle - 75) ** 2 / 1000 / window.fps
 
         # height warnings
-        if self.altitude <= 500 and not window.ignore_warnings:
+        if self.altitude <= 500 and not window.ignore_warnings \
+                and self.total_vertical_velocity <= -20:
             window.warnings['pulluploop'] = True
             window.status = ["PRESS AND HOLD", "THE \"DOWN\" KEY!"]
-        elif (self.altitude < 1000 and self.vertical_velocity > 0
+        elif (self.altitude < 1000 and self.total_vertical_velocity > 0
                 and self.throttle < 50) and not window.ignore_warnings:
             window.warnings['dontsinkloop'] = True
             window.status = ["Be careful not to stall."]
@@ -181,6 +182,7 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
                 and not window.ignore_warnings):
             window.warnings["terrainloop"] = True
         elif (self.altitude < 1000 and self.speed <= 250
+                and self.total_vertical_velocity <= -20
                 and not window.ignore_warnings):
             window.warnings['pulluploop2'] = True
             window.status = ["DO NOT DESCEND!"]
@@ -450,6 +452,7 @@ Your score was %i.",
         self.prev_size = self.size
         if player_id == None: self.id = Game.NEXT_ID; Game.NEXT_ID += 1
         else: self.id = player_id
+        self.key_held = [0, 0, 0]
 
     def __repr__(self):
         """Prints important information about the game."""
@@ -766,25 +769,34 @@ Your score was %i.",
         if not self.plane.ap_enabled:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LEFT]:
-                self.plane.roll_level -= (1 / self.fps)
+                self.key_held[0] += 1
+                self.plane.roll_level -= ((self.key_held[0] / 3) ** .75 / self.fps)
                 if self.plane.roll_level < -4: self.plane.roll_level = -4
             elif keys[pygame.K_RIGHT]:
-                self.plane.roll_level += (1 / self.fps)
+                self.key_held[0] += 1
+                self.plane.roll_level += ((self.key_held[0] / 3) ** .75 / self.fps)
                 if self.plane.roll_level > 4: self.plane.roll_level = 4
+            else: self.key_held[0] = 0
             if keys[pygame.K_UP]:
-                self.plane.vertical_roll_level -= (1 / self.fps)
+                self.key_held[1] += 1
+                self.plane.vertical_roll_level -= ((self.key_held[1] / 3) ** .75 / self.fps)
                 if self.plane.vertical_roll_level < -4:
                     self.plane.vertical_roll_level = -4
             elif keys[pygame.K_DOWN]:
-                self.plane.vertical_roll_level += (1 / self.fps)
+                self.key_held[1] += 1
+                self.plane.vertical_roll_level += ((self.key_held[1] / 3) ** .75 / self.fps)
                 if self.plane.vertical_roll_level > 4:
                     self.plane.vertical_roll_level = 4
+            else: self.key_held[1] = 0
             if keys[pygame.K_F2]:
-                self.plane.throttle -= (8 / self.fps)
+                self.key_held[2] += 1
+                self.plane.throttle -= ((self.key_held[2] / 3) ** .75 / self.fps)
                 if self.plane.throttle < 0: self.plane.throttle = 0
             elif keys[pygame.K_F4]:
-                self.plane.throttle += (8 / self.fps)
+                self.key_held[2] += 1
+                self.plane.throttle += ((self.key_held[2] / 3) ** .75 / self.fps)
                 if self.plane.throttle > 100: self.plane.throttle = 100
+            else: self.key_held[2] = 0
 
             for event in self.events:
                 if event.type == pygame.KEYDOWN:
