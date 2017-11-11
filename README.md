@@ -7,7 +7,7 @@ Requires Python 2 or 3, Pygame
 
 This command installs them on GNU/Linux:
 
-Python 2: `sudo apt-get update && sudo apt-get install python python-pip && sudo pip install pygame`
+Python 2: `sudo apt-get update && sudo apt-get install python python-pip && sudo pip install pygame`  
 Python 3: `sudo apt-get update && sudo apt-get install python3 python3-pip && sudo pip3 install pygame`
 
 Uses Unofficial Utilities for Pygame v3.0.2 by @MasterofNumbers17 (comes pre-installed)
@@ -16,7 +16,7 @@ Uses Unofficial Utilities for Pygame v3.0.2 by @MasterofNumbers17 (comes pre-ins
 
 Python 2: `python slight-fimulator-master`
 Python 3: `python3 slight-fimulator-master`
-You can also run the __main__.py file in your favourite IDE.
+You can also run the \_\_main\_\_.py file in your favourite IDE.
 
 | TO DO THIS                   | PRESS THIS     |
 |------------------------------|----------------|
