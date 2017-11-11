@@ -28,5 +28,9 @@ from constants import *
 screen_size = (1280, 960)
 
 if __name__ == '__main__':
+    print("""Slight Fimulator Copyright (C) 2017 Hao Tian and Adrien Hopkins
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.\n""")
     game = Game(size=screen_size)
     game.mainloop()
