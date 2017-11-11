@@ -14,8 +14,8 @@ Uses Unofficial Utilities for Pygame v3.0.2 by @MasterofNumbers17 (comes pre-ins
 
 ## Usage
 
-Python 2: `python slight-fimulator-master`
-Python 3: `python3 slight-fimulator-master`
+Python 2: `python slight-fimulator-master`  
+Python 3: `python3 slight-fimulator-master`  
 You can also run the \_\_main\_\_.py file in your favourite IDE.
 
 | TO DO THIS                   | PRESS THIS     |
