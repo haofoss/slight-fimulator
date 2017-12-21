@@ -3,7 +3,7 @@
 
 """All of the constants for the game.
 
-Slight Fimulator - Flight simlator in Python
+Slight Fimulator - Flight simulator in Python
 Copyright (C) 2017 Hao Tian and Adrien Hopkins
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ UNITS = (
         'speed': {
             'name': "M/S",
             'value': 1,
-            'round-to': 0
+            'round-to': 1
         },
         'pos': {
             'name': "M",

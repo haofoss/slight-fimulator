@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-"""Slight Fimulator - Flight simlator in Python
+"""Slight Fimulator - Flight simulator in Python
 Copyright (C) 2017 Hao Tian and Adrien Hopkins
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
