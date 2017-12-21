@@ -450,6 +450,7 @@ Your score was %i.",
                 size=size, bg=utils.Game.BG_PRESETS['bg-color'])
         self.max_fps = 60
         self.prev_size = self.size
+        self.unit_id = 0
         if player_id == None: self.id = Game.NEXT_ID; Game.NEXT_ID += 1
         else: self.id = player_id
         self.key_held = [0, 0, 0]
@@ -484,6 +485,11 @@ Your score was %i.",
         self.objectives = self.airspace.objectives
         self.airspace.generate_objective(self.images['objectivemarker'])
         for obj in self.objectives: self.closest_objective = obj
+
+        self.btn_units = utils.Button(self.size[0]*5/256, self.size[1]*5/96,
+                self.size[0] / 8, self.size[0] / 36, "Units: SI",
+                color=self.colors['panel'], color_outline=None,
+                color_text=self.colors['white'], font_size=24)
 
         self.stage = 0
         self.paused = 0
@@ -656,13 +662,17 @@ Your score was %i.",
         # NAV text
         self.draw_text("PLANE LOCATION", self.size[0]*29/64, self.size[1]/16,
                 color_id='white', mode='topleft')
-        self.draw_text("X: %.2f" % (self.plane.upos[0] / 1000),
+        self.draw_text("X: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
+                % (self.plane.upos[0] * UNITS[self.unit_id]['pos']['value']),
                 self.size[0]*29/64, self.size[1]/12,
                 color_id='white', mode='topleft')
-        self.draw_text("Y: %.2f" % (self.plane.upos[1] / 1000),
+        self.draw_text("Y: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
+                % (self.plane.upos[1] * UNITS[self.unit_id]['pos']['value']),
                 self.size[0]*29/64, self.size[1]*5/48,
                 color_id='white', mode='topleft')
-        self.draw_text("ALT: %i M" % self.plane.altitude,
+        self.draw_text("ALT: %%.%if %%s" % UNITS[self.unit_id]['pos']['round-to']
+                % (self.plane.altitude * UNITS[self.unit_id]['pos']['value'],
+                UNITS[self.unit_id]['pos']['name']),
                 self.size[0]*29/64, self.size[1]/8,
                 color_id='white', mode='topleft')
         self.draw_text("HEADING: %.1f" % self.plane.heading,
@@ -676,13 +686,20 @@ Your score was %i.",
                 color_id='white', mode='midtop')
         self.draw_text("OBJECTIVE LOCATION", self.size[0]*31/32, self.size[1]/16,
                 color_id='white', mode='topright')
-        self.draw_text("X: %.2f" % (closest_objective.upos[0] / 1000),
+        self.draw_text("X: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
+                % (closest_objective.upos[0]
+                * UNITS[self.unit_id]['pos']['value']),
                 self.size[0]*31/32, self.size[1]/12,
                 color_id='white', mode='topright')
-        self.draw_text("Y: %.2f" % (closest_objective.upos[1] / 1000),
+        self.draw_text("Y: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
+                % (closest_objective.upos[1]
+                * UNITS[self.unit_id]['pos']['value']),
                 self.size[0]*31/32, self.size[1]*5/48,
                 color_id='white', mode='topright')
-        self.draw_text("ALT: %i M" % closest_objective.altitude,
+        self.draw_text("ALT: %%.%if %%s" % UNITS[self.unit_id]['pos']['round-to']
+                % (closest_objective.altitude
+                * UNITS[self.unit_id]['pos']['value'],
+                UNITS[self.unit_id]['pos']['name']),
                 self.size[0]*31/32, self.size[1]/8,
                 color_id='white', mode='topright')
 
@@ -694,7 +711,9 @@ Your score was %i.",
                 color_id='white', mode='topleft')
         self.draw_text("GRAVITY", self.size[0]*3/128, self.size[1]*17/48,
                 color_id='white', mode='topleft')
-        self.draw_text("%.1f KM/H" % (-self.plane.gravity * 3.6),
+        self.draw_text("%%.%if %%s" % UNITS[self.unit_id]['speed']['round-to']
+                % (-self.plane.gravity * UNITS[self.unit_id]['speed']['value'],
+                UNITS[self.unit_id]['speed']['name']),
                 self.size[0]*3/128, self.size[1]*3/8,
                 color_id='white', mode='topleft')
         self.draw_text("DAMAGE", self.size[0]*3/128, self.size[1]*11/24,
@@ -704,17 +723,25 @@ Your score was %i.",
                 color_id='white', mode='topleft')
         self.draw_text("SPEED", self.size[0]*5/16, self.size[1]/4,
                 color_id='white', mode='topleft')
-        self.draw_text("%.1f KM/H" % (self.plane.speed * 3.6),
+        self.draw_text("%%.%if %%s" % UNITS[self.unit_id]['speed']['round-to']
+                % (self.plane.speed * UNITS[self.unit_id]['speed']['value'],
+                UNITS[self.unit_id]['speed']['name']),
                 self.size[0]*5/16, self.size[1]*13/48,
                 color_id='white', mode='topleft')
         self.draw_text("HORIZ SPD", self.size[0]*5/16, self.size[1]*17/48,
                 color_id='white', mode='topleft')
-        self.draw_text("%.1f KM/H" % (self.plane.horizontal_speed * 3.6),
+        self.draw_text("%%.%if %%s" % UNITS[self.unit_id]['speed']['round-to']
+                % (self.plane.horizontal_speed
+                * UNITS[self.unit_id]['speed']['value'],
+                UNITS[self.unit_id]['speed']['name']),
                 self.size[0]*5/16, self.size[1]*3/8,
                 color_id='white', mode='topleft')
         self.draw_text("VERT SPD", self.size[0]*5/16, self.size[1]*11/24,
                 color_id='white', mode='topleft')
-        self.draw_text("%.1f KM/H" % (self.plane.vertical_velocity * 3.6),
+        self.draw_text("%%.%if %%s" % UNITS[self.unit_id]['speed']['round-to']
+                % (self.plane.vertical_velocity
+                * UNITS[self.unit_id]['speed']['value'],
+                UNITS[self.unit_id]['speed']['name']),
                 self.size[0]*5/16, self.size[1]*23/48,
                 color_id='white', mode='topleft')
 
@@ -763,6 +790,9 @@ Your score was %i.",
         else:
             self.screen.blit(self.images['msg_apdisconnect'],
                     (self.size[0]*7/64, self.size[1]*11/96))
+
+        # buttons
+        self.btn_units.draw(self.screen)
 
     def control_plane(self):
         """Allows you to control the plane."""
@@ -972,6 +1002,12 @@ Your score was %i.",
                     else:
                         self.log("[!] Player paused")
                         self.paused = 1
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.btn_units.is_pressed():
+                    self.unit_id += 1
+                    if self.unit_id >= len(UNITS):
+                        self.unit_id = 0
+                    self.btn_units.text = "Units: %s" % UNITS[self.unit_id]['name']
             elif event.type == self.event_log and not self.paused:
                 self.log()
             elif event.type == self.event_warn:

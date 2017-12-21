@@ -20,6 +20,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Installs Python 3 division and print behaviour
 from __future__ import division, print_function
 
+UNITS = (
+    {
+        'name': "SI",
+        'speed': {
+            'name': "M/S",
+            'value': 1,
+            'round-to': 0
+        },
+        'pos': {
+            'name': "M",
+            'value': 1,
+            'round-to': 0
+        }
+    },
+    {
+        'name': "Metric",
+        'speed': {
+            'name': "KM/H",
+            'value': 3.6,
+            'round-to': 0
+        },
+        'pos': {
+            'name': "KM",
+            'value': .001,
+            'round-to': 3
+        }
+    },
+    {
+        'name': "Imperial",
+        'speed': {
+            'name': "FT/S",
+            'value': 1 / 0.3048,
+            'round-to': 0
+        },
+        'pos': {
+            'name': "FT",
+            'value': 1 / 0.3048,
+            'round-to': 0
+        }
+    }
+)
+
 AIRSPACE_DIM = 100000
 
 MIN_OBJ_ALT = 7500
