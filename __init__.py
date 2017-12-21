@@ -29,8 +29,9 @@ Just a bit of fimulating
 # Installs Python 3 division, print and import behaviour
 from __future__ import division, print_function, absolute_import
 
-__author__ = "Hao Tian and Adrien Hopkins"
+__author__ = "Adrien Hopkins"
 __version__ = "2.2.0a1"
+__credits__ = ("Hao Tian",)
 
 import os
 
