@@ -43,7 +43,9 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class Airplane(utils.ImprovedSprite):
-    """The class for an airplane sprite."""
+    """The class for an airplane sprite.
+    
+    All units are stored internally in SI base units."""
     NEXT_ID = 0
     def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
             speed=0, throttle=0, player_id=None, airspace_dim=[700, 700]):
@@ -51,31 +53,27 @@ class Airplane(utils.ImprovedSprite):
         if y == None and altitude != None: x, y = x
         elif y == None: x, y, altitude = x
         super(Airplane, self).__init__(image, x, y)
-        self.pos = list(self.rect.center)
-        self.upos = self.pos[:]
-        self.upos[0] *= (1000/airspace_dim[0])
-        self.upos[1] *= (1000/airspace_dim[1])
-        self.altitude = altitude
-        self.heading = 0
-        self.pitch = 0
-        self.speed = speed # m/s
-        self.horizontal_velocity = speed
-        self.vertical_velocity = 0
+        # TODO: Force types
+        self._pos = list(self.rect.center)
+        self._upos_multiplier = [100000 / i for i in airspace_dim]
+        self._altitude = altitude
+        self._heading = 0
+        self._pitch = 0
+        self._speed = speed
+        self._acceleration = 0
         self.gravity = 0
         self.gravity_force = 0
         self.max_vert_roll = 0
-        self.throttle = throttle
-        self.acceleration = 0 # m/s^2
-        self.roll_level = 0
-        self.roll = 0
-        self.vertical_roll_level = 0
+        self._throttle = throttle
+        self._roll_level = 0
+        self._vertical_roll_level = 0
         self.ap_cond = [1, 1, 1]
         self.ap_enabled = False
 
         self.within_objective_range = False
-        self.points = 0
+        self._points = 0
         self.exit_code = 0
-        self.health = 100
+        self._health = 100
         self.warnings = []
         if player_id == None: self.id = Airplane.NEXT_ID; Airplane.NEXT_ID += 1
         else: self.id = player_id
@@ -90,6 +88,142 @@ class Airplane(utils.ImprovedSprite):
         if show_labels: return "%s\n%s" % (self.labels(), msg)
         else: return msg
 
+    ## variables
+    @property
+    def pos(self):
+        return self._pos
+    @pos.setter
+    def pos(self, new_value):
+        if not isinstance(new_value, (list, tuple)):
+            raise TypeError("Position must be a list or a tuple.")
+        if len(new_value) != 2:
+            raise ValueError("Position must contain two values.")
+        self.x, self.y = new_value
+    @property
+    def x(self):
+        return self._pos[0]
+    @x.setter
+    def x(self,  new_value):
+        if not isinstance(new_value, (int, float)):
+            raise ValueError("X must be a number")
+        self._pos[0] = new_value
+    @property
+    def z(self):
+        return self._pos[1]
+    @z.setter
+    def z(self,  new_value):
+        if not isinstance(new_value, (int, float)):
+            raise ValueError("Z must be a number")
+        self._pos[1] = new_value
+    @property
+    def upos(self):
+        return [self._pos[0] * self._upos_multiplier[0],
+                self._pos[1] * self._upos_multiplier[1]]
+    @property
+    def altitude(self):
+        return self._altitude
+    @altitude.setter
+    def altitude(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Altitude must be a number.")
+        self._altitude = new_value
+    y = altitude
+    @property
+    def heading(self):
+        return self._heading
+    @heading.setter
+    def heading(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Heading must be a number.")
+        new_value %= math.pi * 2
+        self._heading = new_value
+    @property
+    def heading_degrees(self):
+        return math.degrees(self.heading)
+    @heading_degrees.setter
+    def heading_degrees(self, new_value):
+        self.heading = math.radians(new_value)
+    @property
+    def pitch(self):
+        return self._pitch
+    @pitch.setter
+    def pitch(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Pitch must be a number.")
+        self._pitch = new_value
+    @property
+    def pitch_degrees(self):
+        return math.degrees(self._pitch)
+    @pitch_degrees.setter
+    def pitch_degrees(self, new_value):
+        self.pitch = math.radians(new_value)
+    @property
+    def speed(self):
+        return self._speed
+    @speed.setter
+    def speed(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Velocity must be a number.")
+        self._speed = new_value
+    @property
+    def horizontal_velocity(self):
+        return self.speed * math.cos(self.pitch)
+    horizontal_speed = horizontal_velocity
+    @property
+    def vertical_velocity(self):
+        return self.speed * math.sin(self.pitch)
+    @property
+    def acceleration(self):
+        return self._acceleration
+    @acceleration.setter
+    def acceleration(self, new_value):
+        if not isinstance(new_value, (int,  float)):
+            raise ValueError("Acceleration must be a number")
+        self._acceleration = new_value
+    @property
+    def roll(self):
+        return math.radians((35/198) * self._roll_level**3 + (470/99) * self._roll_level)
+    @property
+    def roll_degrees(self):
+        return (35/198) * self._roll_level**3 + (470/99) * self._roll_level
+    @property
+    def roll_level(self):
+        return self._roll_level
+    @roll_level.setter
+    def roll_level(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Roll Level must be a number.")
+        self._roll_level = new_value
+    @property
+    def vertical_roll_level(self):
+        return self._vertical_roll_level
+    @vertical_roll_level.setter
+    def vertical_roll_level(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Vertical Roll Level must be a number.")
+        self._vertical_roll_level = new_value
+    @property
+    def health(self):
+        return self._health
+    @health.setter
+    def health(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Health must be a number.")
+        self._health = new_value
+    @property
+    def damage(self):
+        return 100-self._health
+    @property
+    def points(self):
+        return self._points
+    @points.setter
+    def points(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Score must be a number.")
+        self._points = new_value
+    score = points # score is an alias for points.
+    # TODO: Make everything a @property
+    
     def labels(self):
         """Outputs the labels used in __repr__."""
         return ("ID:\tX:\tY:\tALT:\tSPD:\tACCEL:\tVSPD:\t\
@@ -98,7 +232,7 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
     def draw(self, screen, airspace_x, airspace_y=None):
         """Draws the airplane."""
         if airspace_y == None: airspace_x, airspace_y = airspace_x
-        image_rotated = pygame.transform.rotate(self.image, -self.heading)
+        image_rotated = pygame.transform.rotate(self.image, -self.heading_degrees)
         draw_rect = self.rect.copy()
         draw_rect.x += airspace_x
         draw_rect.y += airspace_y
@@ -115,25 +249,17 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         damage = 0
         
         # move the plane
-        self.roll = self.get_roll(self.roll_level)
         self.heading += (self.roll / window.fps)
-        if self.heading <= 0: self.heading += 360
-        elif self.heading > 360: self.heading -= 360
         if self.vertical_roll_level > self.max_vert_roll:
             self.vertical_roll_level = self.max_vert_roll
-        self.pitch = self.get_pitch(self.vertical_roll_level)
+        self.pitch_degrees = self.get_pitch(self.vertical_roll_level)
 
         # acceleration
-        self.acceleration = (self.throttle ** 2 / 250
+        self.acceleration = (self._throttle ** 2 / 250
                 - self.speed ** 2 / 6250)
         self.speed += (self.acceleration / window.fps)
-        self.horizontal_speed = self.speed * math.cos(math.radians(
-                self.pitch))
-        self.vertical_velocity = self.speed * math.sin(math.radians(
-                self.pitch))
-        if self.vertical_velocity == -0.0: self.vertical_velocity = 0
 
-        # atall and gravity
+        # stall and gravity
         if self.speed <= 100:
             if self.altitude != 0:
                 window.warnings['stall'] = True
@@ -150,24 +276,18 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         
         hspeed = self.horizontal_speed / window.fps
         vspeed = self.total_vertical_velocity / window.fps
-        self.pos[0] += math.sin(math.radians(self.heading)) * hspeed * x_str
-        self.pos[1] -= math.cos(math.radians(self.heading)) * hspeed * y_str
+        self.pos[0] += math.sin(self.heading) * hspeed * x_str
+        self.pos[1] -= math.cos(self.heading) * hspeed * y_str
         self.rect.center = tuple(self.pos)
         self.altitude += vspeed
         if self.altitude < 0.1: self.altitude = 0
-
-        # User-freindly coordinates
-        # Goes from 0 to +1000 in both dimensions
-        self.upos = self.pos[:]
-        self.upos[0] *= (1/x_str)
-        self.upos[1] *= (1/y_str)
 
         # overspeed damage
         if self.speed > 375:
             window.warnings['overspeed'] = True
             damage += (self.speed - 375) ** 2 / 25000 / window.fps
-        if self.throttle > 75:
-            damage += (self.throttle - 75) ** 2 / 1000 / window.fps
+        if self._throttle > 75:
+            damage += (self._throttle - 75) ** 2 / 1000 / window.fps
 
         # height warnings
         if self.altitude <= 500 and not window.ignore_warnings \
@@ -175,7 +295,7 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
             window.warnings['pulluploop'] = True
             window.status = ["PRESS AND HOLD", "THE \"DOWN\" KEY!"]
         elif (self.altitude < 1000 and self.total_vertical_velocity > 0
-                and self.throttle < 50) and not window.ignore_warnings:
+                and self._throttle < 50) and not window.ignore_warnings:
             window.warnings['dontsinkloop'] = True
             window.status = ["Be careful not to stall."]
         elif (self.altitude < 1000 and self.speed > 250
@@ -208,7 +328,7 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         if self.altitude > 500:
             window.warnings['pulluploop'] = False
         if not (self.altitude < 1000 and self.vertical_velocity > 0
-                and self.throttle < 50):
+                and self._throttle < 50):
             window.warnings['dontsinkloop'] = False
         if not (self.altitude < 1000 and self.speed > 250):
             window.warnings["terrainloop"] = False
@@ -219,7 +339,7 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         if self.ap_enabled:
             self.roll_level *= (0.5 ** (1/window.fps))
             self.vertical_roll_level *= (0.5 ** (1/window.fps))
-            self.throttle = 50 + (self.throttle-50) * (0.5 ** (1/window.fps))
+            self._throttle = 50 + (self._throttle-50) * (0.5 ** (1/window.fps))
             window.status = ["Autopilot engaged..."]
             if abs(self.roll_level) < 0.1:
                 self.roll_level = 0
@@ -229,8 +349,8 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
                 self.vertical_roll_level = 0
                 self.ap_cond[1] = True
             else: self.ap_cond[0] = False
-            if abs(50 - self.throttle) < 1:
-                self.throttle = 50
+            if abs(50 - self._throttle) < 1:
+                self._throttle = 50
                 self.ap_cond[2] = True
             else: self.ap_cond[0] = False
             if self.ap_cond[0] and self.ap_cond[1] and self.ap_cond[2]:
@@ -610,19 +730,19 @@ Your score was %i.",
         attitude_tape_rect.center = (self.size[0]*55/256,
                 self.size[1]*9/24)
         offset_total = (attitude_tape_rect.height * 3/1600 * self.size[1]
-                /attitude_tape_rect.height * self.plane.pitch)
-        offset_x = math.sin(math.radians(self.plane.roll)) * offset_total
-        offset_y = math.cos(math.radians(self.plane.roll)) * offset_total
+                /attitude_tape_rect.height * self.plane.pitch_degrees)
+        offset_x = math.sin(self.plane.roll) * offset_total
+        offset_y = math.cos(self.plane.roll) * offset_total
         attitude_tape_rect.x += offset_x
         attitude_tape_rect.y += offset_y
 
         attitude_tape_overlay = pygame.transform.rotate(
-                self.images['attitudetape-overlay'], self.plane.roll)
+                self.images['attitudetape-overlay'], self.plane.roll_degrees)
         attitude_tape_overlay_rect = attitude_tape_overlay.get_rect()
         attitude_tape_overlay_rect.center = (self.size[0]*55/256,
                 self.size[1]*9/24)
         offset_total = (attitude_tape_overlay_rect.height*3/1600*self.size[1]
-                /attitude_tape_overlay_rect.height * self.plane.pitch)
+                /attitude_tape_overlay_rect.height * self.plane.pitch_degrees)
         offset_x = math.sin(math.radians(self.plane.roll)) * offset_total
         offset_y = math.cos(math.radians(self.plane.roll)) * offset_total
         attitude_tape_overlay_rect.x += offset_x
@@ -675,10 +795,10 @@ Your score was %i.",
                 UNITS[self.unit_id]['pos']['name']),
                 self.size[0]*29/64, self.size[1]/8,
                 color_id='white', mode='topleft')
-        self.draw_text("HEADING: %.1f" % self.plane.heading,
+        self.draw_text("HEADING: %.1f°" % self.plane.heading_degrees,
                 self.size[0]*91/128, self.size[1]/16,
                 color_id='white', mode='midtop')
-        self.draw_text("PITCH: %.1f" % self.plane.pitch,
+        self.draw_text("PITCH: %.1f°" % self.plane.pitch_degrees,
                 self.size[0]*91/128, self.size[1]/12,
                 color_id='white', mode='midtop')
         self.draw_text("SCORE: %i" % self.plane.points,
@@ -706,7 +826,7 @@ Your score was %i.",
         # panel text
         self.draw_text("THROTTLE", self.size[0]*3/128, self.size[1]/4,
                 color_id='white', mode='topleft')
-        self.draw_text("%.1f%%" % self.plane.throttle,
+        self.draw_text("%.1f%%" % self.plane._throttle,
                 self.size[0]*3/128, self.size[1]*13/48,
                 color_id='white', mode='topleft')
         self.draw_text("GRAVITY", self.size[0]*3/128, self.size[1]*17/48,
@@ -754,9 +874,9 @@ Your score was %i.",
                 self.size[0]/64, self.size[1]*15/192))
         pygame.draw.rect(self.screen, self.colors['green'],
                 (self.size[0]*15/128,
-                self.size[1]/self.DEFAULT_SIZE[1]*(480-self.plane.throttle),
+                self.size[1]/self.DEFAULT_SIZE[1]*(480-self.plane._throttle),
                 self.size[0]/64,
-                self.size[1]/self.DEFAULT_SIZE[1]*self.plane.throttle))
+                self.size[1]/self.DEFAULT_SIZE[1]*self.plane._throttle))
 
         # status
         for line_id in range(len(self.status)):
@@ -820,19 +940,19 @@ Your score was %i.",
             else: self.key_held[1] = 0
             if keys[pygame.K_F2]:
                 self.key_held[2] += 1
-                self.plane.throttle -= ((self.key_held[2] / 3) ** .75 / self.fps)
-                if self.plane.throttle < 0: self.plane.throttle = 0
+                self.plane._throttle -= ((self.key_held[2] / 3) ** .75 / self.fps)
+                if self.plane._throttle < 0: self.plane._throttle = 0
             elif keys[pygame.K_F4]:
                 self.key_held[2] += 1
-                self.plane.throttle += ((self.key_held[2] / 3) ** .75 / self.fps)
-                if self.plane.throttle > 100: self.plane.throttle = 100
+                self.plane._throttle += ((self.key_held[2] / 3) ** .75 / self.fps)
+                if self.plane._throttle > 100: self.plane._throttle = 100
             else: self.key_held[2] = 0
 
             for event in self.events:
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_F1: self.plane.throttle = 0
-                    elif event.key == pygame.K_F3: self.plane.throttle = 25
-                    elif event.key == pygame.K_F5: self.plane.throttle = 75
+                    if event.key == pygame.K_F1: self.plane._throttle = 0
+                    elif event.key == pygame.K_F3: self.plane._throttle = 25
+                    elif event.key == pygame.K_F5: self.plane._throttle = 75
                     elif event.key == pygame.K_z: self.plane.ap_enabled = True
 
     def run_warnings(self):
