@@ -53,7 +53,6 @@ class Airplane(utils.ImprovedSprite):
         if y == None and altitude != None: x, y = x
         elif y == None: x, y, altitude = x
         super(Airplane, self).__init__(image, x, y)
-        # TODO: Force types
         self._pos = list(self.rect.center)
         self._upos_multiplier = [100000 / i for i in airspace_dim]
         self._altitude = altitude
@@ -222,7 +221,6 @@ class Airplane(utils.ImprovedSprite):
             raise TypeError("Score must be a number.")
         self._points = new_value
     score = points # score is an alias for points.
-    # TODO: Make everything a @property
     
     def labels(self):
         """Outputs the labels used in __repr__."""
@@ -398,22 +396,57 @@ class Objective(utils.ImprovedSprite):
         if y == None and altitude != None: x, y = x
         elif y == None: x, y, altitude = x
         super(Objective, self).__init__(image, x, y)
-        self.altitude = altitude
+        self._upos_multiplier = [100000 / i for i in airspace_dim]
+        self._altitude = altitude
 
         if obj_id == None: self.id = Objective.NEXT_ID; Objective.NEXT_ID += 1
         else: self.id = obj_id
-
-        self.upos = list(self.rect.center[:])
-        self.upos[0] -= airspace_dim[0] / 2
-        self.upos[0] *= (AIRSPACE_DIM/airspace_dim[0])
-        self.upos[1] -= airspace_dim[1] / 2
-        self.upos[1] *= (AIRSPACE_DIM/airspace_dim[1])
 
     def __repr__(self, show_labels=True):
         msg = "%i\t%.1f\t%.1f\t%i\t" % (self.id, self.upos[0] / 1000,
                 self.upos[1] / 1000, self.altitude)
         if show_labels: return "%s\n%s" % (self.labels(), msg)
         else: return msg
+        
+    @property
+    def pos(self):
+        return self.rect.center
+    @pos.setter
+    def pos(self, new_value):
+        if not isinstance(new_value, (list, tuple)):
+            raise TypeError("Position must be a list or a tuple.")
+        if len(new_value) != 2:
+            raise ValueError("Position must contain two values.")
+        self.x, self.y = new_value
+    @property
+    def x(self):
+        return self.rect.x
+    @x.setter
+    def x(self,  new_value):
+        if not isinstance(new_value, (int, float)):
+            raise ValueError("X must be a number")
+        self.rect.x = new_value
+    @property
+    def z(self):
+        return self.rect.y
+    @z.setter
+    def z(self,  new_value):
+        if not isinstance(new_value, (int, float)):
+            raise ValueError("Z must be a number")
+        self.rect.y = new_value
+    @property
+    def upos(self):
+        return [self.rect.x * self._upos_multiplier[0],
+                self.rect.y * self._upos_multiplier[1]]
+    @property
+    def altitude(self):
+        return self._altitude
+    @altitude.setter
+    def altitude(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Altitude must be a number.")
+        self._altitude = new_value
+    y = altitude
 
     def labels(self):
         """Outputs the labels used in __repr__."""
@@ -426,12 +459,6 @@ class Objective(utils.ImprovedSprite):
         draw_rect.x += airspace_x
         draw_rect.y += airspace_y
         screen.blit(self.image, draw_rect)
-
-    def update(self, window):
-        """Updates the objective."""
-        self.upos = list(self.rect.center[:])
-        self.upos[0] *= (AIRSPACE_DIM/window.airspace.width)
-        self.upos[1] *= (AIRSPACE_DIM/window.airspace.height)
 
 
 class Airspace(pygame.rect.Rect):
@@ -725,7 +752,7 @@ Your score was %i.",
             
         # attitude tape
         attitude_tape = pygame.transform.rotate(
-                self.images['attitudetape-bg'], self.plane.roll)
+                self.images['attitudetape-bg'], self.plane.roll_degrees)
         attitude_tape_rect = attitude_tape.get_rect()
         attitude_tape_rect.center = (self.size[0]*55/256,
                 self.size[1]*9/24)
@@ -743,8 +770,8 @@ Your score was %i.",
                 self.size[1]*9/24)
         offset_total = (attitude_tape_overlay_rect.height*3/1600*self.size[1]
                 /attitude_tape_overlay_rect.height * self.plane.pitch_degrees)
-        offset_x = math.sin(math.radians(self.plane.roll)) * offset_total
-        offset_y = math.cos(math.radians(self.plane.roll)) * offset_total
+        offset_x = math.sin(self.plane.roll) * offset_total
+        offset_y = math.cos(self.plane.roll) * offset_total
         attitude_tape_overlay_rect.x += offset_x
         attitude_tape_overlay_rect.y += offset_y
         self.screen.blit(attitude_tape, attitude_tape_rect)
