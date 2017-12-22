@@ -799,7 +799,10 @@ Your score was %i.",
 
     def prepare_log(self):
         """Prepares the log."""
-        self.log_filepath = "%s/logs/%s.log" % (PATH, datetime.datetime.now())
+        if LOG_PATH == None: 
+            self.log_filepath = None
+            return
+        self.log_filepath = "%s/%s.log" % (LOG_PATH, datetime.datetime.now())
         self.log_file = open(self.log_filepath, 'wt')
         output = []
         # first row labels
@@ -1151,7 +1154,8 @@ Your score was %i.",
          - The coordinates of all objectives
         If the argument text is specified, logs that instead.
         """
-        self.log_file = open(self.log_filepath, 'at')
+        if self.log_filepath != None:
+            self.log_file = open(self.log_filepath, 'at')
         if text == None:
             output = []
             output.append("%.1f\t%i\t%i\t" % ((self.time-self.startup_time),
@@ -1166,10 +1170,11 @@ Your score was %i.",
                     if objective.id == objective_id: break
                 output.append(objective.__repr__(False))
         else: output = text
-        self.log_file.write(''.join(output))
-        self.log_file.write('\n')
+        if self.log_filepath != None:
+            self.log_file.write(''.join(output))
+            self.log_file.write('\n')
         if self.output_log: print(''.join(output))
-        self.log_file.close()
+        if self.log_filepath != None: self.log_file.close()
 
     def get_tick_values(self):
         """Prepares the values for the log."""

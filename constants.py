@@ -20,6 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Installs Python 3 division and print behaviour
 from __future__ import division, print_function
 
+import os
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+LOG_PATH = None
+#LOG_PATH = "%s/logs/" % PATH # Uncomment this line to save logs to disk
+
 UNITS = (
     {
         'name': "SI",
