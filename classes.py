@@ -97,27 +97,36 @@ class Airplane(utils.ImprovedSprite):
             raise TypeError("Position must be a list or a tuple.")
         if len(new_value) != 2:
             raise ValueError("Position must contain two values.")
-        self.x, self.y = new_value
+        self.x, self.z = new_value
+        self.rect.center = self._pos
     @property
     def x(self):
         return self._pos[0]
     @x.setter
-    def x(self,  new_value):
+    def x(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise ValueError("X must be a number")
         self._pos[0] = new_value
+        self.rect.centerx = self._pos[0]
     @property
     def z(self):
         return self._pos[1]
     @z.setter
-    def z(self,  new_value):
+    def z(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise ValueError("Z must be a number")
         self._pos[1] = new_value
+        self.rect.centery = self._pos[1]
     @property
     def upos(self):
-        return [self._pos[0] * self._upos_multiplier[0],
-                self._pos[1] * self._upos_multiplier[1]]
+        return [self.x * self._upos_multiplier[0],
+                self.z * self._upos_multiplier[1]]
+    @property
+    def ux(self):
+        return self.x * self._upos_multiplier[0]
+    @property
+    def uz(self):
+        return self.z * self._upos_multiplier[1]
     @property
     def altitude(self):
         return self._altitude
@@ -274,8 +283,8 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         
         hspeed = self.horizontal_speed / window.fps
         vspeed = self.total_vertical_velocity / window.fps
-        self.pos[0] += math.sin(self.heading) * hspeed * x_str
-        self.pos[1] -= math.cos(self.heading) * hspeed * y_str
+        self.x += math.sin(self.heading) * hspeed * x_str
+        self.z -= math.cos(self.heading) * hspeed * y_str
         self.rect.center = tuple(self.pos)
         self.altitude += vspeed
         if self.altitude < 0.1: self.altitude = 0
@@ -396,6 +405,7 @@ class Objective(utils.ImprovedSprite):
         if y == None and altitude != None: x, y = x
         elif y == None: x, y, altitude = x
         super(Objective, self).__init__(image, x, y)
+        self._pos = list(self.rect.center)
         self._upos_multiplier = [100000 / i for i in airspace_dim]
         self._altitude = altitude
 
@@ -410,34 +420,43 @@ class Objective(utils.ImprovedSprite):
         
     @property
     def pos(self):
-        return self.rect.center
+        return self._pos
     @pos.setter
     def pos(self, new_value):
         if not isinstance(new_value, (list, tuple)):
             raise TypeError("Position must be a list or a tuple.")
         if len(new_value) != 2:
             raise ValueError("Position must contain two values.")
-        self.x, self.y = new_value
+        self.x, self.z = new_value
+        self.rect.center = self._pos
     @property
     def x(self):
-        return self.rect.x
+        return self._pos[0]
     @x.setter
-    def x(self,  new_value):
+    def x(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise ValueError("X must be a number")
-        self.rect.x = new_value
+        self._pos[0] = new_value
+        self.rect.centerx = self._pos[0]
     @property
     def z(self):
-        return self.rect.y
+        return self._pos[1]
     @z.setter
-    def z(self,  new_value):
+    def z(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise ValueError("Z must be a number")
-        self.rect.y = new_value
+        self._pos[1] = new_value
+        self.rect.centery = self._pos[1]
     @property
     def upos(self):
-        return [self.rect.x * self._upos_multiplier[0],
-                self.rect.y * self._upos_multiplier[1]]
+        return [self.x * self._upos_multiplier[0],
+                self.z * self._upos_multiplier[1]]
+    @property
+    def ux(self):
+        return self.x * self._upos_multiplier[0]
+    @property
+    def uz(self):
+        return self.z * self._upos_multiplier[1]
     @property
     def altitude(self):
         return self._altitude
@@ -519,8 +538,8 @@ class Airspace(pygame.rect.Rect):
         while objective_correct != [True, True]:
             objective_correct = [False, False]
             # generate objective
-            objective.rect.centerx = random.randint(0, self.width)
-            objective.rect.centery = random.randint(0, self.height)
+            objective.x = random.randint(0, self.width)
+            objective.z = random.randint(0, self.height)
             objective.altitude = random.randint(MIN_OBJ_ALT, MAX_ALTITUDE)
             # test for collision
             if not pygame.sprite.spritecollide(objective, self.planes,
@@ -810,11 +829,11 @@ Your score was %i.",
         self.draw_text("PLANE LOCATION", self.size[0]*29/64, self.size[1]/16,
                 color_id='white', mode='topleft')
         self.draw_text("X: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
-                % (self.plane.upos[0] * UNITS[self.unit_id]['pos']['value']),
+                % (self.plane.ux * UNITS[self.unit_id]['pos']['value']),
                 self.size[0]*29/64, self.size[1]/12,
                 color_id='white', mode='topleft')
-        self.draw_text("Y: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
-                % (self.plane.upos[1] * UNITS[self.unit_id]['pos']['value']),
+        self.draw_text("Z: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
+                % (self.plane.uz * UNITS[self.unit_id]['pos']['value']),
                 self.size[0]*29/64, self.size[1]*5/48,
                 color_id='white', mode='topleft')
         self.draw_text("ALT: %%.%if %%s" % UNITS[self.unit_id]['pos']['round-to']
@@ -834,13 +853,11 @@ Your score was %i.",
         self.draw_text("OBJECTIVE LOCATION", self.size[0]*31/32, self.size[1]/16,
                 color_id='white', mode='topright')
         self.draw_text("X: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
-                % (closest_objective.upos[0]
-                * UNITS[self.unit_id]['pos']['value']),
+                % (closest_objective.ux * UNITS[self.unit_id]['pos']['value']),
                 self.size[0]*31/32, self.size[1]/12,
                 color_id='white', mode='topright')
-        self.draw_text("Y: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
-                % (closest_objective.upos[1]
-                * UNITS[self.unit_id]['pos']['value']),
+        self.draw_text("Z: %%.%if" % UNITS[self.unit_id]['pos']['round-to']
+                % (closest_objective.uz * UNITS[self.unit_id]['pos']['value']),
                 self.size[0]*31/32, self.size[1]*5/48,
                 color_id='white', mode='topright')
         self.draw_text("ALT: %%.%if %%s" % UNITS[self.unit_id]['pos']['round-to']
