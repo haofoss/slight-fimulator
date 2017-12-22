@@ -45,11 +45,15 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 class Airplane(utils.ImprovedSprite):
     """The class for an airplane sprite.
     
-    All units are stored internally in SI base units."""
+    All units are stored internally in SI base units,
+    except X and Z, which are stored in pixels."""
     NEXT_ID = 0
     def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
             speed=0, throttle=0, player_id=None, airspace_dim=[700, 700]):
         """Initializes the instance."""
+        if player_id == None: self._id = Airplane.NEXT_ID; Airplane.NEXT_ID += 1
+        else: self._id = player_id
+        
         if y == None and altitude != None: x, y = x
         elif y == None: x, y, altitude = x
         super(Airplane, self).__init__(image, x, y)
@@ -60,27 +64,28 @@ class Airplane(utils.ImprovedSprite):
         self._pitch = 0
         self._speed = speed
         self._acceleration = 0
-        self.gravity = 0
-        self.gravity_force = 0
-        self.max_vert_roll = 0
+        self._gravity = 0
         self._throttle = throttle
         self._roll_level = 0
         self._vertical_roll_level = 0
-        self.ap_cond = [1, 1, 1]
-        self.ap_enabled = False
-
-        self.within_objective_range = False
+        self._autopilot_info = {
+            'enabled': False, 
+            'conditions': {
+                'roll-centered': True, 
+                'vertical-roll-centered': True, 
+                'throttle-centered': True
+            }
+        }
+        
+        self._within_objective_range = False
         self._points = 0
-        self.exit_code = 0
+        self._exit_code = 0
         self._health = 100
-        self.warnings = []
-        if player_id == None: self.id = Airplane.NEXT_ID; Airplane.NEXT_ID += 1
-        else: self.id = player_id
 
     def __repr__(self, show_labels=True):
         """Displays some important stats about the plane."""
-        msg = ("%i\t%.1f\t%.1f\t%i\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t\
-%i\t%.1f\t" % (self.id, self.upos[0] / 1000, self.upos[1] / 1000,
+        msg = ("%i\t%i\t%i\t%i\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t\
+%i\t%.1f\t" % (self.id, self.ux, self.uz,
                 self.altitude, self.speed, self.acceleration,
                 self.vertical_velocity, self.heading, self.roll, self.pitch,
                 self.points, 100 - self.health))
@@ -88,6 +93,10 @@ class Airplane(utils.ImprovedSprite):
         else: return msg
 
     ## variables
+    # TODO: Turn this into pos (previously upos).  Use rect.center for draw coordinates.
+    @property
+    def id(self):
+        return self._id
     @property
     def pos(self):
         return self._pos
@@ -181,6 +190,17 @@ class Airplane(utils.ImprovedSprite):
     def vertical_velocity(self):
         return self.speed * math.sin(self.pitch)
     @property
+    def gravity(self):
+        return self._gravity
+    @gravity.setter
+    def gravity(self, new_value):
+        if not isinstance(new_value, (int, float)):
+            raise TypeError("Gravity must be a number.")
+        self._gravity = new_value
+    @property
+    def total_vertical_velocity(self):
+        return self.vertical_velocity - self.gravity
+    @property
     def acceleration(self):
         return self._acceleration
     @acceleration.setter
@@ -190,7 +210,7 @@ class Airplane(utils.ImprovedSprite):
         self._acceleration = new_value
     @property
     def roll(self):
-        return math.radians((35/198) * self._roll_level**3 + (470/99) * self._roll_level)
+        return math.radians(self.roll_degrees)
     @property
     def roll_degrees(self):
         return (35/198) * self._roll_level**3 + (470/99) * self._roll_level
@@ -211,6 +231,23 @@ class Airplane(utils.ImprovedSprite):
             raise TypeError("Vertical Roll Level must be a number.")
         self._vertical_roll_level = new_value
     @property
+    def autopilot_enabled(self):
+        if not self._autopilot_info['enabled']: return False
+        else: # See if the autopilot can be disabled
+            if abs(self.roll_level) < 0.1:
+                self.roll_level = 0
+                self._autopilot_info['conditions']['roll-centered'] = True
+            if abs(self.vertical_roll_level) < 0.1:
+                self.vertical_roll_level = 0
+                self._autopilot_info['conditions'][
+                        'vertical-roll-centered'] = True
+            if abs(50 - self._throttle) < 1:
+                self._throttle = 50
+                self._autopilot_info['conditions']['throttle-centered'] = True
+            if all(self._autopilot_info['conditions'].values()):
+                self._autopilot_info['enabled'] = False
+            return self._autopilot_info['enabled']
+    @property
     def health(self):
         return self._health
     @health.setter
@@ -230,6 +267,21 @@ class Airplane(utils.ImprovedSprite):
             raise TypeError("Score must be a number.")
         self._points = new_value
     score = points # score is an alias for points.
+    @property
+    def exit_code(self):
+        return self._exit_code
+    @exit_code.setter
+    def exit_code(self, new_value):
+        if not isinstance(new_value, int):
+            raise TypeError("Please use exit codes 0-7.")
+        elif new_value < 0 or new_value > 7:
+            raise ValueError("Please use exit codes 0-7.")
+        self._exit_code = new_value
+        
+    def enable_autopilot(self):
+        self._autopilot_info['enabled'] = True
+        for condition in self._autopilot_info['conditions']:
+            self._autopilot_info['conditions'][condition] = False
     
     def labels(self):
         """Outputs the labels used in __repr__."""
@@ -239,7 +291,8 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
     def draw(self, screen, airspace_x, airspace_y=None):
         """Draws the airplane."""
         if airspace_y == None: airspace_x, airspace_y = airspace_x
-        image_rotated = pygame.transform.rotate(self.image, -self.heading_degrees)
+        image_rotated = pygame.transform.rotate(self.image,
+            -self.heading_degrees)
         draw_rect = self.rect.copy()
         draw_rect.x += airspace_x
         draw_rect.y += airspace_y
@@ -251,35 +304,30 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         # calculate display stretch
         x_str = window.airspace.width / AIRSPACE_DIM
         y_str = window.airspace.height / AIRSPACE_DIM
-
         # initialize damage
         damage = 0
+
+        # stall and gravity
+        if self.speed <= 100:
+            if self.altitude != 0:
+                window.warnings['stall'] = True
+            max_vert_roll = max((self.speed-50) / 12.5, 0)
+        else: max_vert_roll = 4
+        self.gravity += (((50 - self.speed) / 50 * 10)
+             - (self.gravity ** 2 / 1000))
+        if self.gravity < 0: self.gravity = 0
+        if self.altitude <= 0.1: self.gravity = 0
         
         # move the plane
         self.heading += (self.roll / window.fps)
-        if self.vertical_roll_level > self.max_vert_roll:
-            self.vertical_roll_level = self.max_vert_roll
+        if self.vertical_roll_level > max_vert_roll:
+            self.vertical_roll_level = max_vert_roll
         self.pitch_degrees = self.get_pitch(self.vertical_roll_level)
 
         # acceleration
         self.acceleration = (self._throttle ** 2 / 250
                 - self.speed ** 2 / 6250)
         self.speed += (self.acceleration / window.fps)
-
-        # stall and gravity
-        if self.speed <= 100:
-            if self.altitude != 0:
-                window.warnings['stall'] = True
-            self.max_vert_roll = max((self.speed-50) / 12.5, 0)
-        else: self.max_vert_roll = 4
-        self.gravity_force += (((50 - self.speed) / 50 * 10)
-             - (self.gravity_force ** 2 / 1000))
-        if self.gravity_force < 0: self.gravity_force = 0
-        if self.altitude <= 0.1: self.gravity = 0
-        else: self.gravity = self.gravity_force
-        self.total_vertical_velocity = self.vertical_velocity - self.gravity
-        if self.total_vertical_velocity < -self.altitude:
-            self.total_vertical_velocity = -self.altitude
         
         hspeed = self.horizontal_speed / window.fps
         vspeed = self.total_vertical_velocity / window.fps
@@ -317,12 +365,12 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
                 <= ALTITUDE_WITHIN):
             window.status = ["Approaching objective", "altitude..."]
             # if we just entered objective altitude range
-            if not self.within_objective_range:
+            if not self._within_objective_range:
                 window.warnings["altitude"] = True
-                self.within_objective_range = True
+                self._within_objective_range = True
         # if we are outside objective altitude range
         elif not window.ignore_warnings:
-            self.within_objective_range = False
+            self._within_objective_range = False
             window.status = ["Fly to the objective."]
         elif window.ignore_warnings == 1:
             window.status = ["Fly up above 1000 m!"]
@@ -343,25 +391,12 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
             window.warnings['pulluploop2'] = False
 
         # autopilot
-        if self.ap_enabled:
+        if self.autopilot_enabled:
             self.roll_level *= (0.5 ** (1/window.fps))
             self.vertical_roll_level *= (0.5 ** (1/window.fps))
             self._throttle = 50 + (self._throttle-50) * (0.5 ** (1/window.fps))
             window.status = ["Autopilot engaged..."]
-            if abs(self.roll_level) < 0.1:
-                self.roll_level = 0
-                self.ap_cond[0] = True
-            else: self.ap_cond[0] = False
-            if abs(self.vertical_roll_level) < 0.1:
-                self.vertical_roll_level = 0
-                self.ap_cond[1] = True
-            else: self.ap_cond[0] = False
-            if abs(50 - self._throttle) < 1:
-                self._throttle = 50
-                self.ap_cond[2] = True
-            else: self.ap_cond[0] = False
-            if self.ap_cond[0] and self.ap_cond[1] and self.ap_cond[2]:
-                self.ap_enabled = False
+            if not self.autopilot_enabled:
                 window.sounds['apdisconnect'].play()
 
         # check for almost-collision
@@ -402,6 +437,9 @@ class Objective(utils.ImprovedSprite):
     def __init__(self, image, x=(0, 0, 0), y=None, altitude=None, obj_id=None,
             airspace_dim=[700, 700]):
         """Initializes the instance."""
+        if obj_id == None: self._id = Objective.NEXT_ID; Objective.NEXT_ID += 1
+        else: self._id = obj_id
+        
         if y == None and altitude != None: x, y = x
         elif y == None: x, y, altitude = x
         super(Objective, self).__init__(image, x, y)
@@ -409,15 +447,15 @@ class Objective(utils.ImprovedSprite):
         self._upos_multiplier = [100000 / i for i in airspace_dim]
         self._altitude = altitude
 
-        if obj_id == None: self.id = Objective.NEXT_ID; Objective.NEXT_ID += 1
-        else: self.id = obj_id
-
     def __repr__(self, show_labels=True):
-        msg = "%i\t%.1f\t%.1f\t%i\t" % (self.id, self.upos[0] / 1000,
-                self.upos[1] / 1000, self.altitude)
+        msg = "%i\t%i\t%i\t%i\t" % (self.id, self.ux, self.uz,
+                self.altitude)
         if show_labels: return "%s\n%s" % (self.labels(), msg)
         else: return msg
-        
+    
+    @property
+    def id(self):
+        return self._id
     @property
     def pos(self):
         return self._pos
@@ -948,7 +986,7 @@ Your score was %i.",
             self.screen.blit(self.images['msg_overspeed'],
                     (self.size[0]*73/256, self.size[1]*49/96))
         # autopilot message
-        if self.plane.ap_enabled:
+        if self.plane.autopilot_enabled:
             self.screen.blit(self.images['msg_apengaged'],
                     (self.size[0]*17/128, self.size[1]*11/96))
         else:
@@ -960,7 +998,7 @@ Your score was %i.",
 
     def control_plane(self):
         """Allows you to control the plane."""
-        if not self.plane.ap_enabled:
+        if not self.plane.autopilot_enabled:
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LEFT]:
                 self.key_held[0] += 1
@@ -997,7 +1035,7 @@ Your score was %i.",
                     if event.key == pygame.K_F1: self.plane._throttle = 0
                     elif event.key == pygame.K_F3: self.plane._throttle = 25
                     elif event.key == pygame.K_F5: self.plane._throttle = 75
-                    elif event.key == pygame.K_z: self.plane.ap_enabled = True
+                    elif event.key == pygame.K_z: self.plane.enable_autopilot()
 
     def run_warnings(self):
         """Runs warnings."""
