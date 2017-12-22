@@ -323,7 +323,8 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         if airspace_y == None: airspace_x, airspace_y = airspace_x
         image_rotated = pygame.transform.rotate(self.image,
             -self.heading_degrees)
-        draw_rect = self.rect.copy()
+        draw_rect = image_rotated.get_rect()
+        draw_rect.center = self.rect.center
         draw_rect.x += airspace_x
         draw_rect.y += airspace_y
         screen.blit(image_rotated, draw_rect)
