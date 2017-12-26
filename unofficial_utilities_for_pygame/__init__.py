@@ -28,7 +28,7 @@ else:
     from . import game, sprite
     
 __author__ = "Adrien Hopkins"
-__version__ = "3.0.2"
+__version__ = "3.0.3"
 
 Game = game.Game
 BG_PRESETS = Game.BG_PRESETS

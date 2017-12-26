@@ -1,10 +1,13 @@
-# Unofficial Utilities for Pygame Version 3.0.2
+# Unofficial Utilities for Pygame
 An unofficial module that makes pygame coding easier.
 
-# Dependecies
-Python 2 or 3, Pygame (All shown commands use Python 2)
+## Dependencies
+Requires Python 2 or 3, Pygame
 
-`sudo apt-get install python && sudo apt-get install python-pygame`
+This command installs them on GNU/Linux:
+
+Python 2: `sudo apt-get update && sudo apt-get install python python-pip && sudo pip install pygame`  
+Python 3: `sudo apt-get update && sudo apt-get install python3 python3-pip && sudo pip3 install pygame`  
 
 # How to Use
 This is not a standalone script. You must import it from within python.

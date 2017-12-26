@@ -8,9 +8,9 @@ Requires Python 2 or 3, Pygame
 This command installs them on GNU/Linux:
 
 Python 2: `sudo apt-get update && sudo apt-get install python python-pip && sudo pip install pygame`  
-Python 3: `sudo apt-get update && sudo apt-get install python3 python3-pip && sudo pip3 install pygame`
+Python 3: `sudo apt-get update && sudo apt-get install python3 python3-pip && sudo pip3 install pygame`  
 
-Uses Unofficial Utilities for Pygame v3.0.2 by @MasterofNumbers17 (comes pre-installed)
+Uses Unofficial Utilities for Pygame v3.0.3 by @MasterofNumbers17 (comes pre-installed)
 
 ## Usage
 

@@ -120,28 +120,29 @@ class Game(object):
                         font = pygame.font.Font(font, size)
                         self.fonts[fontname] = font
         else: # Not a zip
-            images_path = "%s/Images" % self.resources_path
+            images_path = os.path.join(self.resources_path, "Images")
             for image_name in os.listdir(images_path):
-                image_file = "%s/%s" % (images_path, image_name)
+                image_file = os.path.join(images_path, image_name)
                 image_name = image_name.split('.') [0]
                 image = pygame.image.load(image_file)
                 self.images[image_name] = image
-            sounds_path = "%s/Sounds" % self.resources_path
+            sounds_path = os.path.join(self.resources_path, "Sounds")
             for sound_name in os.listdir(sounds_path):
-                sound_file = "%s/%s" % (sounds_path, sound_name)
+                sound_file = os.path.join(sounds_path, sound_name)
                 sound_name = sound_name.split('.') [0]
                 sound = pygame.mixer.Sound(sound_file)
                 self.sounds[sound_name] = sound
-            music_path = "%s/Music" % self.resources_path
+            music_path = os.path.join(self.resources_path, "Music")
             for music_name in os.listdir(music_path):
-                music_file = "%s/%s" % (music_path, music_name)
+                music_file = os.path.join(music_path, music_name)
                 music_name = music_name.split('.') [0]
                 self.music_files[music_name] = music_file
             if "colors.txt" in os.listdir(self.resources_path):
-                colors_file = open("%s/colors.txt" % self.resources_path, 'rt')
+                colors_file = open(os.path.join(self.resources_path,
+                        "colors.txt"), 'rt')
             elif "colours.txt" in os.listdir(self.resources_path):
-                colors_file = open("%s/colours.txt" % self.resources_path,
-                        'rt')
+                colors_file = open(os.path.join(self.resources_path,
+                        "colours.txt"), 'rt')
             else: colors_file = None
             if colors_file != None:
                 for line in colors_file.readlines():
@@ -151,8 +152,10 @@ class Game(object):
                     colorname = colorname.strip()
                     color = pygame.color.Color(color.strip())
                     self.colors[colorname] = color
+                colors_file.close()
             try:
-                fonts_file = open("%s/fonts.txt" % self.resources_path)
+                fonts_file = open(os.path.join(self.resources_path,
+                        "fonts.txt"))
                 for line in fonts_file.readlines():
                     if line.strip() == '': continue
                     elif line.strip() [0] == '#': continue
@@ -167,6 +170,7 @@ class Game(object):
                         font = None
                     font = pygame.font.Font(font, size)
                     self.fonts[fontname] = font
+                fonts_file.close()
             except Exception as e: print(e)
         if self.fonts == {}:
             self.fonts['default'] = pygame.font.Font(None, self.size[1]/20)

@@ -24,7 +24,8 @@ import os
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 LOG_PATH = None
-#LOG_PATH = "%s/logs/" % PATH # Uncomment this line to save logs to disk
+# Uncomment this line to save logs to disk
+LOG_PATH = os.path.join(PATH, "logs")
 
 UNITS = (
     {

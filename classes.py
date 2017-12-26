@@ -802,7 +802,8 @@ Your score was %i.",
         if LOG_PATH == None: 
             self.log_filepath = None
             return
-        self.log_filepath = "%s/%s.log" % (LOG_PATH, datetime.datetime.now())
+        self.log_filepath = os.path.join(LOG_PATH,
+                "{}.log".format(datetime.datetime.now()))
         self.log_file = open(self.log_filepath, 'wt')
         output = []
         # first row labels
