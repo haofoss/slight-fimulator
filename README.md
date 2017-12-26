@@ -31,3 +31,7 @@ You can also run the \_\_main\_\_.py file in your favourite IDE.
 | Set throttle to FULL         | F5             |
 | Center controls and throttle | Z              |
 | Pause/Unpause the game       | ESC            |
+
+## API
+
+There is currently no public API.

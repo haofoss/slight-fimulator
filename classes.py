@@ -699,9 +699,9 @@ Your score was %i.",
         """Initializes the instance. Does not start the game."""
         # Finds a folder if possible, otherwise tries a zip archive
         if "resources" in os.listdir(PATH):
-            resources_path = "%s/resources" % PATH
+            resources_path = os.path.join(PATH, "resources")
         elif "resources.zip" in os.listdir(PATH):
-            resources_path = "%s/resources.zip" % PATH
+            resources_path = os.path.join(PATH, "resources.zip")
         else: raise Exception("No resources found!")
         super(Game, self).__init__(
                 resources_path=resources_path,
@@ -802,6 +802,8 @@ Your score was %i.",
         if LOG_PATH == None: 
             self.log_filepath = None
             return
+        if not os.path.isdir(LOG_PATH):
+            os.makedirs(LOG_PATH)
         self.log_filepath = os.path.join(LOG_PATH,
                 "{}.log".format(datetime.datetime.now()))
         self.log_file = open(self.log_filepath, 'wt')
