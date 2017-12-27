@@ -57,10 +57,10 @@ class Airspace(pygame.rect.Rect):
         for plane in self.planes: plane.draw(screen, self.x, self.y)
         for obj in self.objectives: obj.draw(screen, self.x, self.y)
 
-    def update(self, window, *args, **kw):
+    def update(self, *args, **kw):
         """Updates the airspace."""
-        self.planes.update(window, *args)
-        self.objectives.update(window, *args)
+        self.planes.update()
+        self.objectives.update()
 
         for plane in self.planes:
             collisions = pygame.sprite.spritecollide(plane,

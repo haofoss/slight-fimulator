@@ -729,6 +729,15 @@ Your score was {}.",
             self.status = ["Fly to the objective."]
         if abs(self.plane.roll) >= 30:
             window.warnings['bankangle'] = True
+        if self.plane.speed < 100 and self.plane.altitude != 0:
+            self.warnings['stall'] = True
+        elif self.plane.speed > 375:
+            self.warnings['overspeed'] = True
+##        # check for almost-collision
+##        if (pygame.sprite.spritecollide(self, pygame.sprite.GroupSingle(
+##                window.closest_objective), False) and abs(self.altitude
+##                - window.closest_objective.altitude) > self.airspace.ALTITUDE_TOLERANCE):
+##            window.status = ["Objective NOT complete.", "Check OBJ ALT"]
 
         # disable loops
         if self.plane.altitude > 500:
@@ -866,7 +875,7 @@ Your score was {}.",
         """One iteration of the main loop."""
         if not self.paused:
             self.control_plane()
-            self.airspace.update(self)
+            self.airspace.update()
             self.draw()
         elif self.paused != 1:
             self.draw()

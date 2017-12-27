@@ -70,6 +70,7 @@ class Airplane(pygame.sprite.Sprite):
         self._points = 0
         self._exit_code = 0
         self._health = 100
+        self._time = time.time()
 
         self._image = image
 
@@ -305,30 +306,30 @@ class Airplane(pygame.sprite.Sprite):
         for condition in self._autopilot_info['conditions']:
             self._autopilot_info['conditions'][condition] = False
 
-    def get_exit_code(self, airspace):
-        """Returns the exit code.
-
-        0 = Game not ended
-        1 = You Won
-        2 = Window Closed
-        3 = Crash (y=0)
-        4 = Left Airspace (x/z)
-        5 = Damaged
-        6 = Left Airspace (y)
-        7 = Unused
-        """
-        if self.points >= airspace.POINTS_REQUIRED and self.altitude <= 0:
-            return 1
-        # exit code 2 - window closed
-        if self.altitude <= 0 and self.total_vertical_velocity < -20:
-            return 3
-        if not airspace.in_bounds(self):
-            return 4
-        if self.health <= 0:
-            return 5
-        if self.altitude > airspace.MAX_ALTITUDE:
-            return 6
-        return 0
+##    def get_exit_code(self, airspace):
+##        """Returns the exit code.
+##
+##        0 = Game not ended
+##        1 = You Won
+##        2 = Window Closed
+##        3 = Crash (y=0)
+##        4 = Left Airspace (x/z)
+##        5 = Damaged
+##        6 = Left Airspace (y)
+##        7 = Unused
+##        """
+##        if self.points >= airspace.POINTS_REQUIRED and self.altitude <= 0:
+##            return 1
+##        # exit code 2 - window closed
+##        if self.altitude <= 0 and self.total_vertical_velocity < -20:
+##            return 3
+##        if not airspace.in_bounds(self):
+##            return 4
+##        if self.health <= 0:
+##            return 5
+##        if self.altitude > airspace.MAX_ALTITUDE:
+##            return 6
+##        return 0
     
     def labels(self):
         """Outputs the labels used in __repr__."""
@@ -346,16 +347,16 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         draw_rect.y += airspace_y
         screen.blit(image_rotated, draw_rect)
 
-    def update(self, window=None):
+    def update(self):
         """Updates the plane."""
-        if window.fps == 0: window.fps = window.max_fps
+        tick_duration = time.time() - self._time
+        self._time = time.time()
+        
         # initialize damage
         damage = 0
 
         # stall and gravity
         if self.speed <= 100:
-            if self.altitude != 0:
-                window.warnings['stall'] = True
             max_vert_roll = max((self.speed-50) / 12.5, 0)
         else: max_vert_roll = 4
         self.gravity += (((50 - self.speed) / 50 * 10)
@@ -364,18 +365,18 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         if self.altitude <= 0.1: self.gravity = 0
         
         # move the plane
-        self.heading += (self.roll / window.fps)
+        self.heading += (self.roll * tick_duration)
         if self.vertical_roll_level > max_vert_roll:
             self.vertical_roll_level = max_vert_roll
         self.pitch_degrees = self.get_pitch(self.vertical_roll_level)
 
         # acceleration
-        self.acceleration = (self._throttle ** 2 / 250
+        self.acceleration = (self.throttle ** 2 / 250
                 - self.speed ** 2 / 6250)
-        self.speed += (self.acceleration / window.fps)
+        self.speed += (self.acceleration * tick_duration)
         
-        hspeed = self.horizontal_speed / window.fps
-        vspeed = self.total_vertical_velocity / window.fps
+        hspeed = self.horizontal_speed * tick_duration
+        vspeed = self.total_vertical_velocity * tick_duration
         self.x += math.sin(self.heading) * hspeed
         self.z -= math.cos(self.heading) * hspeed
         self.altitude += vspeed
@@ -383,25 +384,18 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
 
         # overspeed damage
         if self.speed > 375:
-            window.warnings['overspeed'] = True
-            damage += (self.speed - 375) ** 2 / 25000 / window.fps
+            damage += (self.speed - 375) ** 2 / 25000 * tick_duration
         if self._throttle > 75:
-            damage += (self._throttle - 75) ** 2 / 1000 / window.fps
+            damage += (self._throttle - 75) ** 2 / 1000 * tick_duration
 
         # autopilot
         if self.autopilot_enabled:
-            self.roll_level *= (0.5 ** (1/window.fps))
-            self.vertical_roll_level *= (0.5 ** (1/window.fps))
-            self._throttle = 50 + (self._throttle-50) * (0.5 ** (1/window.fps))
-            window.status = ["Autopilot engaged..."]
-            if not self.autopilot_enabled:
-                window.sounds['apdisconnect'].play()
-
-        # check for almost-collision
-        if (pygame.sprite.spritecollide(self, pygame.sprite.GroupSingle(
-                window.closest_objective), False) and abs(self.altitude
-                - window.closest_objective.altitude) > self.airspace.ALTITUDE_TOLERANCE):
-            window.status = ["Objective NOT complete.", "Check OBJ ALT"]
+            self.roll_level *= (0.5 ** tick_duration)
+            self.vertical_roll_level *= (0.5 ** tick_duration)
+            self._throttle = 50 + (self.throttle-50) * (0.5 ** tick_duration)
+##            window.status = ["Autopilot engaged..."]
+##            if not self.autopilot_enabled:
+##                window.sounds['apdisconnect'].play()
 
         # deal damage
         self.health -= damage
