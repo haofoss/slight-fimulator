@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 
 """Runs the package.
 
@@ -20,17 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Installs Python 3 division and print behaviour
 from __future__ import division, print_function
 
-from classes import *
-from functions import *
-from constants import *
+import airspace
+import game
 
-# Edit this line to change the screen size
-screen_size = (1280, 960)
-
-if __name__ == '__main__':
-    print("""Slight Fimulator Copyright (C) 2017 Hao Tian and Adrien Hopkins
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to redistribute it
-under certain conditions.\n""")
-    game = Game(size=screen_size)
-    game.mainloop()
+a = airspace.Airspace()
+g = game.Client()
+g.mainloop(a)

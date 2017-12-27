@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
 
 """Slight Fimulator - Flight simulator in Python
 Copyright (C) 2017 Hao Tian and Adrien Hopkins
@@ -30,22 +29,5 @@ Just a bit of fimulating
 from __future__ import division, print_function, absolute_import
 
 __author__ = "Adrien Hopkins"
-__version__ = "2.2.0"
+__version__ = "3.0.0a1"
 __credits__ = ("Hao Tian",)
-
-import os
-
-try:
-    from classes import *
-    from functions import *
-    from constants import *
-except:
-    from .classes import *
-    from .functions import *
-    from .constants import *
-
-# Gets current filepath
-PATH = os.path.dirname(os.path.realpath(__file__))
-
-# Centers the window on the screen
-os.environ['SDL_VIDEO_CENTERED'] = '1'
