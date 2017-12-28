@@ -305,31 +305,6 @@ class Airplane(pygame.sprite.Sprite):
         self._autopilot_info['enabled'] = True
         for condition in self._autopilot_info['conditions']:
             self._autopilot_info['conditions'][condition] = False
-
-##    def get_exit_code(self, airspace):
-##        """Returns the exit code.
-##
-##        0 = Game not ended
-##        1 = You Won
-##        2 = Window Closed
-##        3 = Crash (y=0)
-##        4 = Left Airspace (x/z)
-##        5 = Damaged
-##        6 = Left Airspace (y)
-##        7 = Unused
-##        """
-##        if self.points >= airspace.POINTS_REQUIRED and self.altitude <= 0:
-##            return 1
-##        # exit code 2 - window closed
-##        if self.altitude <= 0 and self.total_vertical_velocity < -20:
-##            return 3
-##        if not airspace.in_bounds(self):
-##            return 4
-##        if self.health <= 0:
-##            return 5
-##        if self.altitude > airspace.MAX_ALTITUDE:
-##            return 6
-##        return 0
     
     def labels(self):
         """Outputs the labels used in __repr__."""
