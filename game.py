@@ -21,6 +21,7 @@ from __future__ import division, print_function
 
 import datetime
 import io
+import logging
 import math
 import os
 import time
@@ -32,7 +33,7 @@ class Client(pygame.rect.Rect):
     GAME_STAGES = {}
     GAME_LOOPS = {}
     PATH = os.path.dirname(os.path.realpath(__file__))
-    LOG_PATH = "logs"
+    LOG_PATH = os.path.join(PATH, "logs")
     DEFAULT_SIZE = (1280, 960)
     NEXT_ID = 0
     EXIT_TITLES = (
@@ -105,17 +106,15 @@ Your score was {}.",
             self.resources_path = os.path.join(self.PATH, "resources")
         elif "resources.zip" in os.listdir(self.PATH):
             self.resources_path = os.path.join(self.PATH, "resources.zip")
-        else: raise Exception("No resources found!")
+        else: raise FileNotFoundError("No resources found!")
         self.clock = pygame.time.Clock() # Controls ticking
         self.max_fps = 60 # Controls max fps
-        
-        self.screen = pygame.display.set_mode(self.size)
-        pygame.display.set_caption("Slight Fimulator")
 
         if player_id == None: self._id = Client.NEXT_ID; Client.NEXT_ID += 1
         else: self._id = player_id
 
-        self.enable_logging = False
+        self.log_to_file = True
+        self.log_level = logging.INFO
     @property
     def id_(self):
         return self._id
@@ -151,6 +150,10 @@ Your score was {}.",
         pygame.init()
         self.load_resources()
 
+##        self.screen = pygame.display.set_mode(self.size, pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(self.size)
+        pygame.display.set_caption("Slight Fimulator")
+
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
 
@@ -160,15 +163,14 @@ Your score was {}.",
         self.airspace.size = (self.size[0]*35/64, self.size[1]*35/48)
         self.held_keys = {}
 
-        self.plane = self.airspace.add_plane(self.images['navmarker'],
+        self.plane = self.airspace.add_plane(self.scaled_images['navmarker'],
                 player_id=self.id_)
-        self.airspace.generate_objective(self.images['objectivemarker'])
+        self.airspace.generate_objective(self.scaled_images['objectivemarker'])
         for obj in self.airspace.objectives: self.closest_objective = obj
 
         self.key_held = [0, 0, 0]
         self.stage = 0
         self.paused = 0
-        self.ignore_warnings = 1
         self.status = ["Fly to the objective."]
         self.warnings = {
             "terrain": False,
@@ -188,7 +190,6 @@ Your score was {}.",
             "stall": False
         }
 
-        self.output_log = True
         self.startup_time = time.time()
         self.previous_time = time.time()
         self.time = time.time()
@@ -222,22 +223,34 @@ Your score was {}.",
 
     def prepare_log(self):
         """Prepares the log."""
-        if self.LOG_PATH == None or not self.enable_logging: 
-            self.log_filepath = None
-        elif self.LOG_PATH != None:
+        if not self.log_to_file:
+            logging.basicConfig(datefmt="%H:%M:%S", format=
+                    "%(asctime)s    %(levelname)s\t%(message)s",
+                    level=self.log_level)
+        else:
+            warn = False
             if not os.path.isdir(self.LOG_PATH):
                 os.makedirs(self.LOG_PATH)
-            self.log_filepath = os.path.join(self.LOG_PATH,
-                    "{}.log".format(datetime.datetime.now()))
+                warn = True
+            logging.basicConfig(datefmt="%H:%M:%S", format=
+                    "%(asctime)s    %(levelname)s\t%(message)s",
+                    filename=os.path.join(self.LOG_PATH,
+                    "{}.log".format(datetime.datetime.now())),
+                    level=self.log_level)
+            if warn:
+                logging.warning("No logging directory found, \
+creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         output = []
         # first row labels
-        output.append("TIME\t\t\t")
+        output.append("TIME\t")
         for plane_id in range(len(self.airspace.planes)):
             output.append("PLN-%i\t\t\t\t\t\t\t\t\t\t\t\t" % plane_id)
         for objective_id in range(len(self.airspace.objectives)):
             output.append("OBJ-%i\t\t\t" % objective_id)
+        logging.debug(''.join(output))
+        output = []
         # second row labels
-        output.append("\nSEC:\tTICK:\tDUR:\t")
+        output.append("TICK:\t")
         for plane_id in range(len(self.airspace.planes)):
             for plane in self.airspace.planes:
                 if plane.id_ == plane_id: break
@@ -246,14 +259,7 @@ Your score was {}.",
             for objective in self.airspace.objectives:
                 if objective.id_ == objective_id: break
             output.append(objective.labels())
-        if self.log_filepath != None:
-            self.log_file = open(self.log_filepath, 'wt')
-            self.log_file.write(''.join(output))
-            self.log_file.write('\n')
-            self.log_file.close()
-        if self.output_log:
-            print('====== START LOG ======')
-            print(''.join(output))
+        logging.debug(''.join(output))
         
 
     def load_resources(self):
@@ -438,7 +444,6 @@ Your score was {}.",
             new_size[0] = self.size[0] * (self.size[1] / self.prev_size[1])
         if self.size[1] == self.prev_size[1]:
             new_size[1] = self.size[1] * (self.size[0] / self.prev_size[0])
-        self.screen = pygame.display.set_mode(new_size, pygame.RESIZABLE)
         self.size = new_size
         self.scale_images()
 
@@ -467,7 +472,7 @@ Your score was {}.",
             
         # attitude tape
         attitude_tape = pygame.transform.rotate(
-                self.images['attitudetape-bg'], self.plane.roll_degrees)
+                self.scaled_images['attitudetape-bg'], self.plane.roll_degrees)
         attitude_tape_rect = attitude_tape.get_rect()
         attitude_tape_rect.center = (self.size[0]*55/256,
                 self.size[1]*9/24)
@@ -479,7 +484,8 @@ Your score was {}.",
         attitude_tape_rect.y += offset_y
 
         attitude_tape_overlay = pygame.transform.rotate(
-                self.images['attitudetape-overlay'], self.plane.roll_degrees)
+                self.scaled_images['attitudetape-overlay'],
+                self.plane.roll_degrees)
         attitude_tape_overlay_rect = attitude_tape_overlay.get_rect()
         attitude_tape_overlay_rect.center = (self.size[0]*55/256,
                 self.size[1]*9/24)
@@ -504,7 +510,7 @@ Your score was {}.",
         pygame.draw.rect(self.screen, self.colors['panel'],
                 (self.size[0]*5/256, self.size[1]/2,
                 self.size[0]*25/64, self.size[1]*7/48))
-        self.screen.blit(self.images['attitudecrosshair'],
+        self.screen.blit(self.scaled_images['attitudecrosshair'],
                 (self.size[0]*35/256, self.size[1]*9/24))
 
         # redraw background
@@ -518,7 +524,7 @@ Your score was {}.",
                 (self.size[0]*105/256, 0, self.size[0]*151/256, self.size[1]))
 
         # draw NAV/airspace
-        self.airspace.draw(self.screen, self.images['navcircle'],
+        self.airspace.draw(self.screen, self.scaled_images['navcircle'],
                 self.colors['black'], self.colors['panel'])
         
         # NAV text
@@ -626,29 +632,29 @@ Your score was {}.",
 
         # warnings
         if self.warnings["pullup"]:
-            self.screen.blit(self.images['msg_pullup'],
+            self.screen.blit(self.scaled_images['msg_pullup'],
                     (self.size[0]*5/32, self.size[1]*49/96))
         if self.warnings["terrain"]:
-            self.screen.blit(self.images['msg_warning'],
+            self.screen.blit(self.scaled_images['msg_warning'],
                     (self.size[0]*187/1280, self.size[1]*7/40))
         if self.warnings["stall"]:
-            self.screen.blit(self.images['msg_stall'],
+            self.screen.blit(self.scaled_images['msg_stall'],
                     (self.size[0]*33/1280, self.size[1]*491/960))
         if self.warnings["dontsink"]:
-            self.screen.blit(self.images['msg_dontsink'],
+            self.screen.blit(self.scaled_images['msg_dontsink'],
                     (self.size[0]*19/80, self.size[1]*109/192))
         if self.warnings["bankangle"]:
-            self.screen.blit(self.images['msg_bankangle'],
+            self.screen.blit(self.scaled_images['msg_bankangle'],
                     (self.size[0]/40, self.size[1]*109/192))
         if self.warnings["overspeed"]:
-            self.screen.blit(self.images['msg_overspeed'],
+            self.screen.blit(self.scaled_images['msg_overspeed'],
                     (self.size[0]*73/256, self.size[1]*49/96))
         # autopilot message
         if self.plane.autopilot_enabled:
-            self.screen.blit(self.images['msg_apengaged'],
+            self.screen.blit(self.scaled_images['msg_apengaged'],
                     (self.size[0]*17/128, self.size[1]*11/96))
         else:
-            self.screen.blit(self.images['msg_apdisconnect'],
+            self.screen.blit(self.scaled_images['msg_apdisconnect'],
                     (self.size[0]*7/64, self.size[1]*11/96))
 
         pygame.draw.rect(self.screen, self.colors['panel'], self.btn_units)
@@ -733,11 +739,6 @@ Your score was {}.",
             self.warnings['stall'] = True
         elif self.plane.speed > 375:
             self.warnings['overspeed'] = True
-##        # check for almost-collision
-##        if (pygame.sprite.spritecollide(self, pygame.sprite.GroupSingle(
-##                window.closest_objective), False) and abs(self.altitude
-##                - window.closest_objective.altitude) > self.airspace.ALTITUDE_TOLERANCE):
-##            window.status = ["Objective NOT complete.", "Check OBJ ALT"]
 
         # disable loops
         if self.plane.altitude > 500:
@@ -796,7 +797,7 @@ Your score was {}.",
             else:
                 self.warnings["dontsink-toggle"] = True
 
-    def log(self, text=None):
+    def log(self):
         """Writes in the log.
 
         The log logs every 5 seconds.  It records:
@@ -806,27 +807,18 @@ Your score was {}.",
          - The coordinates of all objectives
         If the argument text is specified, logs that instead.
         """
-        if self.log_filepath != None:
-            self.log_file = open(self.log_filepath, 'at')
-        if text == None:
-            output = []
-            output.append("%.1f\t%i\t%i\t" % ((self.time-self.startup_time),
-                    self.tick, (self.time-self.previous_time) * 1000))
-            # outputs stats in the correct order
-            for plane_id in range(len(self.airspace.planes)):
-                for plane in self.airspace.planes:
-                    if plane.id_ == plane_id: break
-                output.append(plane.__repr__(False))
-            for objective_id in range(len(self.airspace.objectives)):
-                for objective in self.airspace.objectives:
-                    if objective.id_ == objective_id: break
-                output.append(objective.__repr__(False))
-        else: output = text
-        if self.log_filepath != None:
-            self.log_file.write(''.join(output))
-            self.log_file.write('\n')
-        if self.output_log: print(''.join(output))
-        if self.log_filepath != None: self.log_file.close()
+        output = []
+        output.append("%i\t" % self.tick)
+        # outputs stats in the correct order
+        for plane_id in range(len(self.airspace.planes)):
+            for plane in self.airspace.planes:
+                if plane.id_ == plane_id: break
+            output.append(plane.__repr__(False))
+        for objective_id in range(len(self.airspace.objectives)):
+            for objective in self.airspace.objectives:
+                if objective.id_ == objective_id: break
+            output.append(objective.__repr__(False))
+        logging.debug(''.join(output))
 
     def get_tick_values(self):
         """Prepares the values for the log."""
@@ -845,12 +837,12 @@ Your score was {}.",
         pygame.mixer.music.play(-1)
     def game_loop_startup(self):
         """One iteration of the startup screen loop."""
-        self.screen.blit(self.images['logo'], ((self.size[0]
+        self.screen.blit(self.scaled_images['logo'], ((self.size[0]
                 - self.images['logo'].get_width()) / 2,
                 self.size[1]/18.8))
-        self.screen.blit(self.images['logotext'], ((self.size[0]
+        self.screen.blit(self.scaled_images['logotext'], ((self.size[0]
                 - self.images['logotext'].get_width()) / 2, self.size[1]/2.4))
-        self.screen.blit(self.images['titleprompt'], (self.size[0]*35/64,
+        self.screen.blit(self.scaled_images['titleprompt'], (self.size[0]*35/64,
                 self.size[1]*35/48))
         pygame.display.flip()
         for event in self.events:
@@ -884,7 +876,7 @@ Your score was {}.",
         else:
             self.draw()
         if self.exit_code:
-            self.log("[!] Exited main loop with exitcode %i"
+            logging.info("Exited main loop with exitcode %i"
                     % self.exit_code)
             self.exit_title = self.EXIT_TITLES[self.exit_code]
             self.exit_reason = self.EXIT_REASONS[self.exit_code]
@@ -897,11 +889,13 @@ Your score was {}.",
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     if self.paused:
-                        self.log("[!] Player unpaused")
+                        logging.info("Player unpaused")
+                        self.plane._time += time.time() - self.pause_start
                         self.paused = 0
                     else:
-                        self.log("[!] Player paused")
+                        logging.info("Player paused")
                         self.paused = 1
+                        self.pause_start = time.time()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if self.btn_units.collidepoint(*event.pos):
                     self.unit_id += 1
