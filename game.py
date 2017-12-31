@@ -441,17 +441,16 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         """Updates the screen size."""
         self.prev_size = self.size
         new_size = list(new_size)
+        center = (new_size[0]/2, new_size[1]/2)
         if new_size[0] / new_size[1] > self.DEFAULT_ASPECT_RATIO:
             new_size[0] = new_size[1] * self.DEFAULT_ASPECT_RATIO
         elif new_size[0] / new_size[1] < self.DEFAULT_ASPECT_RATIO:
             new_size[1] = new_size[0] / self.DEFAULT_ASPECT_RATIO
-##        if self.size[0] == self.prev_size[0]:
-##            new_size[0] = self.size[0] * (self.size[1] / self.prev_size[1])
-##        elif self.size[1] == self.prev_size[1]:
-##            new_size[1] = self.size[1] * (self.size[0] / self.prev_size[0])
         self.size = new_size
-        self.airspace.topleft = (self.size[0]*7/16, self.size[1]/24)
-        self.airspace.size = (self.size[0]*35/64, self.size[1]*35/48)
+        self.center = center
+        self.airspace.topleft = (self.x + self.width*7/16,
+                self.y + self.height/24)
+        self.airspace.size = (self.width*35/64, self.height*35/48)
         self.scale_images()
         self.scale_fonts()
 
@@ -490,9 +489,9 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         attitude_tape = pygame.transform.rotate(
                 self.scaled_images['attitudetape-bg'], self.plane.roll_degrees)
         attitude_tape_rect = attitude_tape.get_rect()
-        attitude_tape_rect.center = (self.size[0]*55/256,
-                self.size[1]*9/24)
-        offset_total = (attitude_tape_rect.height * 3/1600 * self.size[1]
+        attitude_tape_rect.center = (self.x + self.width*55/256,
+                self.y + self.height*9/24)
+        offset_total = (attitude_tape_rect.height * 3/1600 * self.height
                 /attitude_tape_rect.height * self.plane.pitch_degrees)
         offset_x = math.sin(self.plane.roll) * offset_total
         offset_y = math.cos(self.plane.roll) * offset_total
@@ -503,9 +502,9 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
                 self.scaled_images['attitudetape-overlay'],
                 self.plane.roll_degrees)
         attitude_tape_overlay_rect = attitude_tape_overlay.get_rect()
-        attitude_tape_overlay_rect.center = (self.size[0]*55/256,
-                self.size[1]*9/24)
-        offset_total = (attitude_tape_overlay_rect.height*3/1600*self.size[1]
+        attitude_tape_overlay_rect.center = (self.x + self.width*55/256,
+                self.y + self.height*9/24)
+        offset_total = (attitude_tape_overlay_rect.height*3/1600*self.height
                 /attitude_tape_overlay_rect.height * self.plane.pitch_degrees)
         offset_x = math.sin(self.plane.roll) * offset_total
         offset_y = math.cos(self.plane.roll) * offset_total
@@ -515,165 +514,178 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         self.screen.blit(attitude_tape_overlay, attitude_tape_overlay_rect)
         # surrounding panels
         pygame.draw.rect(self.screen, self.colors['panel'],
-                (self.size[0]*5/256, self.size[1]*5/48,
+                (self.x + self.size[0]*5/256, self.y + self.size[1]*5/48,
                 self.size[0]*25/64, self.size[1]*7/48))
         pygame.draw.rect(self.screen, self.colors['panel'],
-                (self.size[0]*5/256, self.size[1]*5/48,
+                (self.x + self.size[0]*5/256, self.y + self.size[1]*5/48,
                 self.size[0]*15/128, self.size[1]*25/48))
         pygame.draw.rect(self.screen, self.colors['panel'],
-                (self.size[0]*75/256, self.size[1]*5/48,
+                (self.x + self.size[0]*75/256, self.y + self.size[1]*5/48,
                 self.size[0]*15/128, self.size[1]*25/48))
         pygame.draw.rect(self.screen, self.colors['panel'],
-                (self.size[0]*5/256, self.size[1]/2,
+                (self.x + self.size[0]*5/256, self.y + self.size[1]/2,
                 self.size[0]*25/64, self.size[1]*7/48))
         self.screen.blit(self.scaled_images['attitudecrosshair'],
-                (self.size[0]*35/256, self.size[1]*9/24))
+                (self.x + self.size[0]*35/256, self.y + self.size[1]*9/24))
 
         # redraw background
         pygame.draw.rect(self.screen, self.colors['background'],
-                (0, 0, self.size[0], self.size[1]*5/48))
+                (0, 0, self.x*2 + self.size[0], self.y + self.size[1]*5/48))
         pygame.draw.rect(self.screen, self.colors['background'],
-                (0, 0, self.size[0]*5/256, self.size[1]))
+                (0, 0, self.x + self.size[0]*5/256, self.y*2 + self.size[1]))
         pygame.draw.rect(self.screen, self.colors['background'],
-                (0, self.size[1]*15/24, self.size[0], self.size[1]*9/24))
+                (0, self.y + self.size[1]*15/24,
+                self.x*2 + self.size[0], self.y + self.size[1]*9/24))
         pygame.draw.rect(self.screen, self.colors['background'],
-                (self.size[0]*105/256, 0, self.size[0]*151/256, self.size[1]))
+                (self.x + self.size[0]*105/256 - 1, 0, 
+                self.x + self.size[0]*151/256, self.y*2 + self.size[1]))
+        # The -1 deals with an issue with sizing innacuracy.
 
         # draw NAV/airspace
         self.airspace.draw(self.screen, self.scaled_images,
                 self.colors['black'], self.colors['panel'])
         
         # NAV text
-        self.draw_text("PLANE LOCATION", self.size[0]*29/64, self.size[1]/16,
+        self.draw_text("PLANE LOCATION",
+                self.x + self.size[0]*29/64, self.y + self.size[1]/16,
                 color_id='white', mode='topleft')
         self.draw_text("X: %%.%if" % self.UNITS[self.unit_id]['pos']['round-to']
                 % (self.plane.x * self.UNITS[self.unit_id]['pos']['value']),
-                self.size[0]*29/64, self.size[1]/12,
+                self.x + self.size[0]*29/64, self.y + self.size[1]/12,
                 color_id='white', mode='topleft')
         self.draw_text("Z: %%.%if" % self.UNITS[self.unit_id]['pos']['round-to']
                 % (self.plane.z * self.UNITS[self.unit_id]['pos']['value']),
-                self.size[0]*29/64, self.size[1]*5/48,
+                self.x + self.size[0]*29/64, self.y + self.size[1]*5/48,
                 color_id='white', mode='topleft')
         self.draw_text("ALT: %%.%if %%s" % self.UNITS[self.unit_id]['pos']['round-to']
                 % (self.plane.altitude * self.UNITS[self.unit_id]['pos']['value'],
                 self.UNITS[self.unit_id]['pos']['name']),
-                self.size[0]*29/64, self.size[1]/8,
+                self.x + self.size[0]*29/64, self.y + self.size[1]/8,
                 color_id='white', mode='topleft')
         self.draw_text("HEADING: %.1f°" % self.plane.heading_degrees,
-                self.size[0]*91/128, self.size[1]/16,
+                self.x + self.size[0]*91/128, self.y + self.size[1]/16,
                 color_id='white', mode='midtop')
         self.draw_text("PITCH: %.1f°" % self.plane.pitch_degrees,
-                self.size[0]*91/128, self.size[1]/12,
+                self.x + self.size[0]*91/128, self.y + self.size[1]/12,
                 color_id='white', mode='midtop')
         self.draw_text("SCORE: %i" % self.plane.points,
-                self.size[0]*91/128, self.size[1]*5/48,
+                self.x + self.size[0]*91/128, self.y + self.size[1]*5/48,
                 color_id='white', mode='midtop')
-        self.draw_text("OBJECTIVE LOCATION", self.size[0]*31/32, self.size[1]/16,
+        self.draw_text("OBJECTIVE LOCATION",
+                self.x + self.size[0]*31/32, self.y + self.size[1]/16,
                 color_id='white', mode='topright')
         self.draw_text("X: %%.%if" % self.UNITS[self.unit_id]['pos']['round-to']
                 % (closest_objective.x * self.UNITS[self.unit_id]['pos']['value']),
-                self.size[0]*31/32, self.size[1]/12,
+                self.x + self.size[0]*31/32, self.y + self.size[1]/12,
                 color_id='white', mode='topright')
         self.draw_text("Z: %%.%if" % self.UNITS[self.unit_id]['pos']['round-to']
                 % (closest_objective.z * self.UNITS[self.unit_id]['pos']['value']),
-                self.size[0]*31/32, self.size[1]*5/48,
+                self.x + self.size[0]*31/32, self.y + self.size[1]*5/48,
                 color_id='white', mode='topright')
         self.draw_text("ALT: %%.%if %%s" % self.UNITS[self.unit_id]['pos']['round-to']
                 % (closest_objective.altitude
                 * self.UNITS[self.unit_id]['pos']['value'],
                 self.UNITS[self.unit_id]['pos']['name']),
-                self.size[0]*31/32, self.size[1]/8,
+                self.x + self.size[0]*31/32, self.y + self.size[1]/8,
                 color_id='white', mode='topright')
 
         # panel text
-        self.draw_text("THROTTLE", self.size[0]*3/128, self.size[1]/4,
+        self.draw_text("THROTTLE",
+                self.x + self.size[0]*3/128, self.y + self.size[1]/4,
                 color_id='white', mode='topleft')
-        self.draw_text("%.1f%%" % self.plane._throttle,
-                self.size[0]*3/128, self.size[1]*13/48,
+        self.draw_text("%.1f%%" % self.plane.throttle,
+                self.x + self.size[0]*3/128, self.y + self.size[1]*13/48,
                 color_id='white', mode='topleft')
-        self.draw_text("GRAVITY", self.size[0]*3/128, self.size[1]*17/48,
+        self.draw_text("GRAVITY", 
+                self.x + self.size[0]*3/128, self.y + self.size[1]*17/48,
                 color_id='white', mode='topleft')
         self.draw_text("%%.%if %%s" % self.UNITS[self.unit_id]['speed']['round-to']
                 % (-self.plane.gravity * self.UNITS[self.unit_id]['speed']['value'],
                 self.UNITS[self.unit_id]['speed']['name']),
-                self.size[0]*3/128, self.size[1]*3/8,
+                self.x + self.size[0]*3/128, self.y + self.size[1]*3/8,
                 color_id='white', mode='topleft')
-        self.draw_text("DAMAGE", self.size[0]*3/128, self.size[1]*11/24,
+        self.draw_text("DAMAGE",
+                self.x + self.size[0]*3/128, self.y + self.size[1]*11/24,
                 color_id='white', mode='topleft')
         self.draw_text("%.1f%%" % (100 - self.plane.health),
-                self.size[0]*3/128, self.size[1]*23/48,
+                self.x + self.size[0]*3/128, self.y + self.size[1]*23/48,
                 color_id='white', mode='topleft')
-        self.draw_text("SPEED", self.size[0]*5/16, self.size[1]/4,
+        self.draw_text("SPEED", 
+                self.x + self.size[0]*5/16, self.y + self.size[1]/4,
                 color_id='white', mode='topleft')
         self.draw_text("%%.%if %%s" % self.UNITS[self.unit_id]['speed']['round-to']
                 % (self.plane.speed * self.UNITS[self.unit_id]['speed']['value'],
                 self.UNITS[self.unit_id]['speed']['name']),
-                self.size[0]*5/16, self.size[1]*13/48,
+                self.x + self.size[0]*5/16, self.y + self.size[1]*13/48,
                 color_id='white', mode='topleft')
-        self.draw_text("HORIZ SPD", self.size[0]*5/16, self.size[1]*17/48,
+        self.draw_text("HORIZ SPD",
+                self.x + self.size[0]*5/16, self.y + self.size[1]*17/48,
                 color_id='white', mode='topleft')
         self.draw_text("%%.%if %%s" % self.UNITS[self.unit_id]['speed']['round-to']
                 % (self.plane.horizontal_speed
                 * self.UNITS[self.unit_id]['speed']['value'],
                 self.UNITS[self.unit_id]['speed']['name']),
-                self.size[0]*5/16, self.size[1]*3/8,
+                self.x + self.size[0]*5/16, self.y + self.size[1]*3/8,
                 color_id='white', mode='topleft')
-        self.draw_text("VERT SPD", self.size[0]*5/16, self.size[1]*11/24,
+        self.draw_text("VERT SPD",
+                self.x + self.size[0]*5/16, self.y + self.size[1]*11/24,
                 color_id='white', mode='topleft')
         self.draw_text("%%.%if %%s" % self.UNITS[self.unit_id]['speed']['round-to']
                 % (self.plane.vertical_velocity
                 * self.UNITS[self.unit_id]['speed']['value'],
                 self.UNITS[self.unit_id]['speed']['name']),
-                self.size[0]*5/16, self.size[1]*23/48,
+                self.x + self.size[0]*5/16, self.y + self.size[1]*23/48,
                 color_id='white', mode='topleft')
 
         # throttle bar
         pygame.draw.rect(self.screen, self.colors['red'],
-                (self.size[0]*15/128, self.size[1]*76/192,
+                (self.x + self.size[0]*15/128, self.y + self.size[1]*76/192,
                 self.size[0]/64, self.size[1]*5/192))
         pygame.draw.rect(self.screen, self.colors['white'],
-                (self.size[0]*15/128, self.size[1]*81/192,
+                (self.x + self.size[0]*15/128, self.y + self.size[1]*81/192,
                 self.size[0]/64, self.size[1]*15/192))
         pygame.draw.rect(self.screen, self.colors['green'],
-                (self.size[0]*15/128,
-                self.size[1]/self.DEFAULT_SIZE[1]*(480-self.plane._throttle),
+                (self.x + self.size[0]*15/128, self.y
+                + self.size[1]/self.DEFAULT_SIZE[1]*(480-self.plane._throttle),
                 self.size[0]/64,
                 self.size[1]/self.DEFAULT_SIZE[1]*self.plane._throttle))
 
         # status
         for line_id in range(len(self.status)):
             self.draw_text(self.status[line_id],
-                    self.size[0]*5/256, self.size[1]*(21/32+1/24*line_id),
+                    self.x + self.size[0]*5/256,
+                    self.y + self.size[1]*(21/32+1/24*line_id),
                     font_id="large", color_id='white', mode='topleft')
 
         # warnings
         if self.warnings["pullup"]:
             self.screen.blit(self.scaled_images['msg_pullup'],
-                    (self.size[0]*5/32, self.size[1]*49/96))
+                    (self.x + self.size[0]*5/32, self.y + self.size[1]*49/96))
         if self.warnings["terrain"]:
             self.screen.blit(self.scaled_images['msg_warning'],
-                    (self.size[0]*187/1280, self.size[1]*7/40))
+                    (self.x + self.size[0]*187/1280, self.y + self.size[1]*7/40))
         if self.warnings["stall"]:
             self.screen.blit(self.scaled_images['msg_stall'],
-                    (self.size[0]*33/1280, self.size[1]*491/960))
+                    (self.x + self.size[0]*33/1280, self.y + self.size[1]*491/960))
         if self.warnings["dontsink"]:
             self.screen.blit(self.scaled_images['msg_dontsink'],
-                    (self.size[0]*19/80, self.size[1]*109/192))
+                    (self.x + self.size[0]*19/80, self.y + self.size[1]*109/192))
         if self.warnings["bankangle"]:
             self.screen.blit(self.scaled_images['msg_bankangle'],
-                    (self.size[0]/40, self.size[1]*109/192))
+                    (self.x + self.size[0]/40, self.y + self.size[1]*109/192))
         if self.warnings["overspeed"]:
             self.screen.blit(self.scaled_images['msg_overspeed'],
-                    (self.size[0]*73/256, self.size[1]*49/96))
+                    (self.x + self.size[0]*73/256, self.y + self.size[1]*49/96))
         # autopilot message
         if self.plane.autopilot_enabled:
             self.screen.blit(self.scaled_images['msg_apengaged'],
-                    (self.size[0]*17/128, self.size[1]*11/96))
+                    (self.x + self.size[0]*17/128, self.y + self.size[1]*11/96))
         else:
             self.screen.blit(self.scaled_images['msg_apdisconnect'],
-                    (self.size[0]*7/64, self.size[1]*11/96))
+                    (self.x + self.size[0]*7/64, self.y + self.size[1]*11/96))
         
-        self.btn_units = pygame.rect.Rect(self.size[0]*5/256, self.size[1]*5/96,
+        self.btn_units = pygame.rect.Rect(
+                self.x + self.size[0]*5/256, self.y + self.size[1]*5/96,
                 self.size[0] / 8, self.size[0] / 36)
         
         pygame.draw.rect(self.screen, self.colors['panel'], self.btn_units)
