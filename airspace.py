@@ -49,18 +49,24 @@ class Airspace(pygame.rect.Rect):
                 ''.join(["\n%s" % repr(plane) for plane in self.planes]),
                 ''.join(["\n%s" % repr(obj) for obj in self.objectives]))
     
-    def draw(self, screen, image, color, panel_color):
+    def draw(self, screen, images, color, panel_color):
         """Draws the airspace and everything inside it."""
         pygame.draw.rect(screen, panel_color, self.panel)
         pygame.draw.rect(screen, color, self)
-        screen.blit(image, self.topleft)
-        for plane in self.planes: plane.draw(screen, self.x, self.y)
-        for obj in self.objectives: obj.draw(screen, self.x, self.y)
+        screen.blit(images['navcircle'], self.topleft)
+        for plane in self.planes: 
+            plane.draw(screen, images['navmarker'], self.x, self.y)
+        for obj in self.objectives:
+            obj.draw(screen, images['objectivemarker'], self.x, self.y)
 
     def update(self, *args, **kw):
         """Updates the airspace."""
-        self.planes.update()
-        self.objectives.update()
+        new_drawpos_multiplier = [
+                self.AIRSPACE_DIM / self.width, 
+                self.AIRSPACE_DIM / self.height
+        ]
+        self.planes.update(new_drawpos_multiplier)
+        self.objectives.update(new_drawpos_multiplier)
 
         for plane in self.planes:
             collisions = pygame.sprite.spritecollide(plane,

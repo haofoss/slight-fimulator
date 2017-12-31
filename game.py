@@ -35,6 +35,7 @@ class Client(pygame.rect.Rect):
     PATH = os.path.dirname(os.path.realpath(__file__))
     LOG_PATH = os.path.join(PATH, "logs")
     DEFAULT_SIZE = (1280, 960)
+    DEFAULT_ASPECT_RATIO = DEFAULT_SIZE[0] / DEFAULT_SIZE[1]
     NEXT_ID = 0
     EXIT_TITLES = (
             "UNEXPECTED",
@@ -150,8 +151,8 @@ Your score was {}.",
         pygame.init()
         self.load_resources()
 
-##        self.screen = pygame.display.set_mode(self.size, pygame.RESIZABLE)
-        self.screen = pygame.display.set_mode(self.size)
+        self.screen = pygame.display.set_mode(self.size, pygame.RESIZABLE)
+##        self.screen = pygame.display.set_mode(self.size)
         pygame.display.set_caption("Slight Fimulator")
 
         pygame.mixer.pre_init(44100, -16, 2, 2048)
@@ -202,9 +203,6 @@ Your score was {}.",
         pygame.time.set_timer(self.event_warn, 1000)
         self.event_toggletext = pygame.USEREVENT + 2
         pygame.time.set_timer(self.event_toggletext, 333)
-
-        self.btn_units = pygame.rect.Rect(self.size[0]*5/256, self.size[1]*5/96,
-                self.size[0] / 8, self.size[0] / 36)
 
         self.done = False
         while not self.done:
@@ -291,6 +289,7 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         self.music_files = {}
         self.colors = {}
         self.fonts = {}
+        self.font_data = {}
         if self.resources_path.endswith('.zip'):
             # Zip Archive Found!
             self.resources = zipfile.ZipFile(self.resources_path)
@@ -340,6 +339,7 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
                         size = int(float(font_info[-1]) * self.height)
                         if font.lower() in ['none', 'default']:
                             font = None
+                        self.font_data[fontname] = font, float(font_info[-1])
                         font = pygame.font.Font(font, size)
                         self.fonts[fontname] = font
         else: # Not a zip
@@ -389,10 +389,11 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
                     size = int(float(font_info[-1]) * self.height)
                     if font.lower() in ['none', 'default']:
                         font = None
+                    self.font_data[fontname] = font, float(font_info[-1])
                     font = pygame.font.Font(font, size)
                     self.fonts[fontname] = font
                 fonts_file.close()
-            except Exception as e: print(e)
+            except Exception as e: logging.warning(str(e))
 
     def draw_text(self, text, x, y=None, mode="center", color_id=(0, 0, 0),
             font_id='default', antialias=1, bg_color=None):
@@ -440,12 +441,19 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         """Updates the screen size."""
         self.prev_size = self.size
         new_size = list(new_size)
-        if self.size[0] == self.prev_size[0]:
-            new_size[0] = self.size[0] * (self.size[1] / self.prev_size[1])
-        if self.size[1] == self.prev_size[1]:
-            new_size[1] = self.size[1] * (self.size[0] / self.prev_size[0])
+        if new_size[0] / new_size[1] > self.DEFAULT_ASPECT_RATIO:
+            new_size[0] = new_size[1] * self.DEFAULT_ASPECT_RATIO
+        elif new_size[0] / new_size[1] < self.DEFAULT_ASPECT_RATIO:
+            new_size[1] = new_size[0] / self.DEFAULT_ASPECT_RATIO
+##        if self.size[0] == self.prev_size[0]:
+##            new_size[0] = self.size[0] * (self.size[1] / self.prev_size[1])
+##        elif self.size[1] == self.prev_size[1]:
+##            new_size[1] = self.size[1] * (self.size[0] / self.prev_size[0])
         self.size = new_size
+        self.airspace.topleft = (self.size[0]*7/16, self.size[1]/24)
+        self.airspace.size = (self.size[0]*35/64, self.size[1]*35/48)
         self.scale_images()
+        self.scale_fonts()
 
     def scale_images(self):
         """Sets up the images."""
@@ -457,6 +465,14 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
             x = int(x); y = int(y)
             self.scaled_images[image_name] = pygame.transform.scale(
                     self.images[image_name], (x, y))
+                    
+    def scale_fonts(self):
+        self.font_names = self.fonts.keys()
+        self.fonts = {}
+        for font_name in self.font_names:
+            self.fonts[font_name] = pygame.font.Font(
+                self.font_data[font_name][0],
+                int(self.font_data[font_name][1] * self.height))
 
     def draw(self):
         """Draws the info box and airspace."""
@@ -524,7 +540,7 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
                 (self.size[0]*105/256, 0, self.size[0]*151/256, self.size[1]))
 
         # draw NAV/airspace
-        self.airspace.draw(self.screen, self.scaled_images['navcircle'],
+        self.airspace.draw(self.screen, self.scaled_images,
                 self.colors['black'], self.colors['panel'])
         
         # NAV text
@@ -656,7 +672,10 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         else:
             self.screen.blit(self.scaled_images['msg_apdisconnect'],
                     (self.size[0]*7/64, self.size[1]*11/96))
-
+        
+        self.btn_units = pygame.rect.Rect(self.size[0]*5/256, self.size[1]*5/96,
+                self.size[0] / 8, self.size[0] / 36)
+        
         pygame.draw.rect(self.screen, self.colors['panel'], self.btn_units)
         txt = self.fonts['default'].render("Units: {}".format(
                 self.UNITS[self.unit_id]['name']), 1, self.colors['white'])

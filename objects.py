@@ -309,10 +309,10 @@ class Airplane(pygame.sprite.Sprite):
         return ("ID:\tX:\tY:\tALT:\tSPD:\tACCEL:\tVSPD:\t\
 HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
 
-    def draw(self, screen, airspace_x, airspace_y=None):
+    def draw(self, screen, image, airspace_x, airspace_y=None):
         """Draws the airplane."""
         if airspace_y == None: airspace_x, airspace_y = airspace_x
-        image_rotated = pygame.transform.rotate(self._image,
+        image_rotated = pygame.transform.rotate(image,
             -self.heading_degrees)
         draw_rect = image_rotated.get_rect()
         draw_rect.center = self.rect.center
@@ -320,10 +320,14 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         draw_rect.y += airspace_y
         screen.blit(image_rotated, draw_rect)
 
-    def update(self):
+    def update(self, new_drawpos_multiplier=None):
         """Updates the plane."""
         tick_duration = time.time() - self._time
         self._time = time.time()
+        
+        # Update Scale
+        if new_drawpos_multiplier != None:
+            self._drawpos_multiplier = new_drawpos_multiplier
         
         # initialize damage
         damage = 0
@@ -488,14 +492,19 @@ class Objective(pygame.sprite.Sprite):
     def labels(self):
         """Outputs the labels used in __repr__."""
         return "ID:\tX:\tY:\tALT:\t"
+        
+    def update(self, new_drawpos_multiplier=None):
+        """Updates the objective."""
+        if new_drawpos_multiplier != None:
+            self._drawpos_multiplier = new_drawpos_multiplier
 
-    def draw(self, screen, airspace_x, airspace_y=None):
+    def draw(self, screen, image, airspace_x, airspace_y=None):
         """Draws the objective."""
         if airspace_y == None: airspace_x, airspace_y = airspace_x
         draw_rect = self.rect.copy()
         draw_rect.x += airspace_x
         draw_rect.y += airspace_y
-        screen.blit(self.image, draw_rect)
+        screen.blit(image, draw_rect)
 
 
 class AdvancedSpriteGroup(pygame.sprite.Group):
