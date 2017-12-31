@@ -19,10 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Installs Python 3 division and print behaviour
 from __future__ import division, print_function
 
-import datetime
 import math
 import os
-import random
 import time
 
 import pygame
@@ -37,7 +35,7 @@ class Airplane(pygame.sprite.Sprite):
     """
     NEXT_ID = 0
     def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
-            player_id=None, airspace_dim=[700, 700]):
+            player_id=None, drawpos_multiplier=None):
         """Initializes the instance."""
         super(Airplane, self).__init__()
         if y == None and altitude != None: x, y = x
@@ -46,7 +44,7 @@ class Airplane(pygame.sprite.Sprite):
         if player_id == None: self._id = Airplane.NEXT_ID; Airplane.NEXT_ID += 1
         else: self._id = player_id
         
-        self._upos_multiplier = [100000 / i for i in airspace_dim]
+        self._drawpos_multiplier = drawpos_multiplier
         self._pos = [x, y]
         self._altitude = altitude
         self._heading = 0
@@ -120,8 +118,8 @@ class Airplane(pygame.sprite.Sprite):
         self._pos[1] = new_value
     @property
     def draw_pos(self):
-        return [self.x / self._upos_multiplier[0],
-                self.z / self._upos_multiplier[1]]
+        return [self.x / self._drawpos_multiplier[0],
+                self.z / self._drawpos_multiplier[1]]
     @draw_pos.setter
     def draw_pos(self, new_value):
         if not isinstance(new_value, (list, tuple)):
@@ -132,24 +130,24 @@ class Airplane(pygame.sprite.Sprite):
             raise ValueError("X must be a number.")
         if not isinstance(new_value[1], (int, float)):
             raise ValueError("Z must be a number.")
-        self._pos[0] = self.rect.centerx * self._upos_multiplier[0]
-        self._pos[1] = self.rect.centery * self._upos_multiplier[1]
+        self._pos[0] = self.rect.centerx * self._drawpos_multiplier[0]
+        self._pos[1] = self.rect.centery * self._drawpos_multiplier[1]
     @property
     def draw_x(self):
-        return self.x / self._upos_multiplier[0]
+        return self.x / self._drawpos_multiplier[0]
     @draw_x.setter
     def draw_x(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise ValueError("Z must be a number")
-        self._pos[0] = new_value * self._upos_multiplier[0]
+        self._pos[0] = new_value * self._drawpos_multiplier[0]
     @property
     def draw_z(self):
-        return self.z / self._upos_multiplier[1]
+        return self.z / self._drawpos_multiplier[1]
     @draw_z.setter
     def draw_z(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise ValueError("Z must be a number")
-        self._pos[1] = new_value * self._upos_multiplier[1]
+        self._pos[1] = new_value * self._drawpos_multiplier[1]
     @property
     def altitude(self):
         return self._altitude
@@ -297,8 +295,8 @@ class Airplane(pygame.sprite.Sprite):
     @property
     def rect(self):
         rect_ = self.image.get_rect()
-        rect_.center = [self.x / self._upos_multiplier[0],
-                self.z / self._upos_multiplier[1]]
+        rect_.center = [self.x / self._drawpos_multiplier[0],
+                self.z / self._drawpos_multiplier[1]]
         return rect_
         
     def enable_autopilot(self):
@@ -392,7 +390,7 @@ class Objective(pygame.sprite.Sprite):
         
         if obj_id == None: self._id = Objective.NEXT_ID; Objective.NEXT_ID += 1
         else: self._id = obj_id
-        self._upos_multiplier = [100000 / i for i in airspace_dim]
+        self._drawpos_multiplier = [100000 / i for i in airspace_dim]
         self._pos = [x, y]
         self._altitude = altitude
         self._image = image
@@ -438,8 +436,8 @@ class Objective(pygame.sprite.Sprite):
         self._pos[1] = new_value
     @property
     def draw_pos(self):
-        return [self.x / self._upos_multiplier[0],
-                self.z / self._upos_multiplier[1]]
+        return [self.x / self._drawpos_multiplier[0],
+                self.z / self._drawpos_multiplier[1]]
     @draw_pos.setter
     def draw_pos(self, new_value):
         if not isinstance(new_value, (list, tuple)):
@@ -450,24 +448,24 @@ class Objective(pygame.sprite.Sprite):
             raise ValueError("X must be a number.")
         if not isinstance(new_value[1], (int, float)):
             raise ValueError("Z must be a number.")
-        self._pos[0] = self.rect.centerx * self._upos_multiplier[0]
-        self._pos[1] = self.rect.centery * self._upos_multiplier[1]
+        self._pos[0] = self.rect.centerx * self._drawpos_multiplier[0]
+        self._pos[1] = self.rect.centery * self._drawpos_multiplier[1]
     @property
     def draw_x(self):
-        return self.x / self._upos_multiplier[0]
+        return self.x / self._drawpos_multiplier[0]
     @draw_x.setter
     def draw_x(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise ValueError("Z must be a number")
-        self._pos[0] = new_value * self._upos_multiplier[0]
+        self._pos[0] = new_value * self._drawpos_multiplier[0]
     @property
     def draw_z(self):
-        return self.z / self._upos_multiplier[1]
+        return self.z / self._drawpos_multiplier[1]
     @draw_z.setter
     def draw_z(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise ValueError("Z must be a number")
-        self._pos[1] = new_value * self._upos_multiplier[1]
+        self._pos[1] = new_value * self._drawpos_multiplier[1]
     @property
     def altitude(self):
         return self._altitude
@@ -483,8 +481,8 @@ class Objective(pygame.sprite.Sprite):
     @property
     def rect(self):
         rect_ = self.image.get_rect()
-        rect_.center = [self.x / self._upos_multiplier[0],
-                self.z / self._upos_multiplier[1]]
+        rect_.center = [self.x / self._drawpos_multiplier[0],
+                self.z / self._drawpos_multiplier[1]]
         return rect_
 
     def labels(self):

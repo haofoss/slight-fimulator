@@ -733,8 +733,8 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         else:
             self.plane._within_objective_range = False
             self.status = ["Fly to the objective."]
-        if abs(self.plane.roll) >= 30:
-            window.warnings['bankangle'] = True
+        if abs(self.plane.roll_degrees) >= 30:
+            self.warnings['bankangle'] = True
         if self.plane.speed < 100 and self.plane.altitude != 0:
             self.warnings['stall'] = True
         elif self.plane.speed > 375:

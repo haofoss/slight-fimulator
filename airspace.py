@@ -68,7 +68,6 @@ class Airspace(pygame.rect.Rect):
             for collision in collisions:
                 plane.points += 1
                 self.generate_objective(collision.image)
-                window.status = ["Fly to the objective."]
 
     def add_plane(self, plane, player_id=None):
         """Adds a plane to the airspace.
@@ -76,8 +75,11 @@ class Airspace(pygame.rect.Rect):
         Creates a new airplane if an image is supplied.
         Returns the newly-added plane."""
         if type(plane) != Airplane:
-            plane = Airplane(plane, self.AIRSPACE_DIM/2, self.AIRSPACE_DIM/2,
-                    0, airspace_dim=self.size, player_id=player_id)
+            plane = Airplane(plane, self.AIRSPACE_DIM/2, self.AIRSPACE_DIM/2, 0, 
+            drawpos_multiplier=[
+                self.AIRSPACE_DIM / self.width, 
+                self.AIRSPACE_DIM / self.height
+            ], player_id=player_id)
         self.planes.add(plane)
         return plane
 
