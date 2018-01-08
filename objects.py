@@ -227,8 +227,8 @@ class Airplane(pygame.sprite.Sprite):
     def throttle(self, new_value):
         if not isinstance(new_value, (int,  float)):
             raise ValueError("Throttle must be a number")
-        if not (0 <= new_value <= 100):
-            raise ValueError("Throttle must be 0-100")
+        if new_value < 0: new_value = 0
+        elif new_value > 100: new_value = 100
         self._throttle = new_value
     @property
     def roll(self):
@@ -243,6 +243,8 @@ class Airplane(pygame.sprite.Sprite):
     def roll_level(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise TypeError("Roll Level must be a number.")
+        if new_value < -4: new_value = -4
+        elif new_value > 4: new_value = 4
         self._roll_level = new_value
     @property
     def vertical_roll_level(self):
@@ -251,6 +253,8 @@ class Airplane(pygame.sprite.Sprite):
     def vertical_roll_level(self, new_value):
         if not isinstance(new_value, (int, float)):
             raise TypeError("Vertical Roll Level must be a number.")
+        if new_value < -4: new_value = -4
+        elif new_value > 4: new_value = 4
         self._vertical_roll_level = new_value
     @property
     def autopilot_enabled(self):

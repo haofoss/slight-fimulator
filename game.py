@@ -58,6 +58,22 @@ class Client(pygame.rect.Rect):
 Your score was {}.",
             "Exited with exitcode 7 (unexpected). Please report."
     )
+    DEFAULT_CONTROLS = { # -1 means no key
+        'horiz-': pygame.K_LEFT,
+        'horiz+': pygame.K_RIGHT,
+        'vert-': pygame.K_UP,
+        'vert+': pygame.K_DOWN,
+        'throttle+': pygame.K_F4,
+        'throttle-': pygame.K_F2,
+        'throttle-0': pygame.K_F1,
+        'throttle-25': pygame.K_F3,
+        'throttle-50': -1,
+        'throttle-75': pygame.K_F5,
+        'throttle-100': -1,
+        'autopilot': pygame.K_z,
+        'pause': pygame.K_PAUSE,
+        'quit': pygame.K_ESCAPE,
+    }
     UNITS = (
         {
             'name': "SI",
@@ -115,7 +131,9 @@ Your score was {}.",
         else: self._id = player_id
 
         self.log_to_file = True
-        self.log_level = logging.INFO
+        self.log_level = logging.WARNING
+
+        self.controls = self.DEFAULT_CONTROLS.copy()
     @property
     def id_(self):
         return self._id
@@ -162,7 +180,6 @@ Your score was {}.",
         self.airspace = airspace
         self.airspace.topleft = (self.size[0]*7/16, self.size[1]/24)
         self.airspace.size = (self.size[0]*35/64, self.size[1]*35/48)
-        self.held_keys = {}
 
         self.plane = self.airspace.add_plane(self.scaled_images['navmarker'],
                 player_id=self.id_)
@@ -170,6 +187,9 @@ Your score was {}.",
         for obj in self.airspace.objectives: self.closest_objective = obj
 
         self.key_held = [0, 0, 0]
+        # Makes a list of length [# of keys registered by Pygame + 1]
+        # The +1 is so key # -1 registers nothing
+        self.keys_held = [0] * (len(pygame.key.get_pressed()) + 1)
         self.stage = 0
         self.paused = 0
         self.status = ["Fly to the objective."]
@@ -214,6 +234,9 @@ Your score was {}.",
             for event in self.events:
                 if event.type == pygame.QUIT or self.stage == 'END':
                     self.done = True
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == self.controls['quit']:
+                        self.done = True
                 elif event.type == pygame.VIDEORESIZE:
                     self.update_screen_size(event.size)
         pygame.quit()
@@ -233,7 +256,8 @@ Your score was {}.",
             logging.basicConfig(datefmt="%H:%M:%S", format=
                     "%(asctime)s    %(levelname)s\t%(message)s",
                     filename=os.path.join(self.LOG_PATH,
-                    "{}.log".format(datetime.datetime.now())),
+                    "{}.log".format(datetime.datetime.now().
+                    strftime("%Y-%m-%d-%H-%M-%S"))),
                     level=self.log_level)
             if warn:
                 logging.warning("No logging directory found, \
@@ -699,42 +723,40 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         """Allows you to control the plane."""
         if not self.plane.autopilot_enabled:
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_LEFT]:
-                self.key_held[0] += 1
-                self.plane.roll_level -= ((self.key_held[0] / 3) ** .75 / self.fps)
-                if self.plane.roll_level < -4: self.plane.roll_level = -4
-            elif keys[pygame.K_RIGHT]:
-                self.key_held[0] += 1
-                self.plane.roll_level += ((self.key_held[0] / 3) ** .75 / self.fps)
-                if self.plane.roll_level > 4: self.plane.roll_level = 4
-            else: self.key_held[0] = 0
-            if keys[pygame.K_UP]:
-                self.key_held[1] += 1
-                self.plane.vertical_roll_level -= ((self.key_held[1] / 3) ** .75 / self.fps)
-                if self.plane.vertical_roll_level < -4:
-                    self.plane.vertical_roll_level = -4
-            elif keys[pygame.K_DOWN]:
-                self.key_held[1] += 1
-                self.plane.vertical_roll_level += ((self.key_held[1] / 3) ** .75 / self.fps)
-                if self.plane.vertical_roll_level > 4:
-                    self.plane.vertical_roll_level = 4
-            else: self.key_held[1] = 0
-            if keys[pygame.K_F2]:
-                self.key_held[2] += 1
-                self.plane._throttle -= ((self.key_held[2] / 3) ** .75 / self.fps)
-                if self.plane._throttle < 0: self.plane._throttle = 0
-            elif keys[pygame.K_F4]:
-                self.key_held[2] += 1
-                self.plane._throttle += ((self.key_held[2] / 3) ** .75 / self.fps)
-                if self.plane._throttle > 100: self.plane._throttle = 100
-            else: self.key_held[2] = 0
-
+            # Combines keys and self.keys_held & removes duplicates
+            for keyid, key in enumerate(keys):
+                if key: self.keys_held[keyid] += 1
+                else: self.keys_held[keyid] = 0
+            # left/right
+            self.plane.roll_level -= ((self.keys_held[self.controls['horiz-']]
+                    / 3) ** .75 / self.fps)
+            self.plane.roll_level += ((self.keys_held[self.controls['horiz+']]
+                    / 3) ** .75 / self.fps)
+            # up/down
+            self.plane.vertical_roll_level -= ((self.keys_held[
+                    self.controls['vert-']] / 3) ** .75 / self.fps)
+            self.plane.vertical_roll_level += ((self.keys_held[
+                    self.controls['vert+']] / 3) ** .75 / self.fps)
+            # throttle
+            self.plane.throttle -= ((self.keys_held[self.controls['throttle-']]
+                    / 3) ** .75 / self.fps)
+            self.plane.throttle += ((self.keys_held[self.controls['throttle+']]
+                    / 3) ** .75 / self.fps)
+            # keypress events
             for event in self.events:
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_F1: self.plane.throttle = 0
-                    elif event.key == pygame.K_F3: self.plane.throttle = 25
-                    elif event.key == pygame.K_F5: self.plane.throttle = 75
-                    elif event.key == pygame.K_z: self.plane.enable_autopilot()
+                    if event.key == self.controls['throttle-0']:
+                        self.plane.throttle = 0
+                    elif event.key == self.controls['throttle-25']:
+                        self.plane.throttle = 25
+                    elif event.key == self.controls['throttle-50']:
+                        self.plane.throttle = 50
+                    elif event.key == self.controls['throttle-75']:
+                        self.plane.throttle = 75
+                    elif event.key == self.controls['throttle-100']:
+                        self.plane.throttle = 100
+                    elif event.key == self.controls['autopilot']:
+                        self.plane.enable_autopilot()
 
     def run_warnings(self):
         """Runs warnings."""
@@ -918,7 +940,7 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
             if event.type == pygame.QUIT:
                 pass
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                if event.key == self.controls['pause']:
                     if self.paused:
                         logging.info("Player unpaused")
                         self.plane._time += time.time() - self.pause_start

@@ -28,7 +28,8 @@ You can also run the \_\_main\_\_.py file in your favourite IDE.
 | Increase throttle            | F4             |
 | Set throttle to FULL         | F5             |
 | Center controls and throttle | Z              |
-| Pause/Unpause the game       | ESC            |
+| Pause/Unpause the game       | PAUSE          |
+| Quit the game                | ESC            |
 
 ## API
 
