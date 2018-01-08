@@ -19,15 +19,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Installs Python 3 division and print behaviour
 from __future__ import division, print_function
 
+import argparse
 import datetime
 import io
 import logging
 import math
 import os
+import sys
 import time
 import zipfile
 
 import pygame
+
+from __init__ import __version__
 
 class Client(pygame.rect.Rect):
     GAME_STAGES = {}
@@ -130,8 +134,23 @@ Your score was {}.",
         if player_id == None: self._id = Client.NEXT_ID; Client.NEXT_ID += 1
         else: self._id = player_id
 
-        self.log_to_file = True
-        self.log_level = logging.WARNING
+        # Handles command line arguments
+        self.parser = argparse.ArgumentParser()
+        self.parser.add_argument('-v', '--version', action='store_true',
+                help='display the version and exit')
+        self.parser.add_argument('--log-to-file', action='store_true',
+                help='log to a file instead of stdout')
+        self.parser.add_argument('--log-level', default='WARNING',
+                choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                help='the least important log item type to display')
+        self.args = self.parser.parse_args()
+
+        if self.args.version:
+            print("Slight Fimulator {}".format(__version__))
+            sys.exit()
+
+        self.log_to_file = self.args.log_to_file
+        self.log_level = getattr(logging, self.args.log_level)
 
         self.controls = self.DEFAULT_CONTROLS.copy()
     @property
@@ -171,7 +190,7 @@ Your score was {}.",
 
         self.screen = pygame.display.set_mode(self.size, pygame.RESIZABLE)
 ##        self.screen = pygame.display.set_mode(self.size)
-        pygame.display.set_caption("Slight Fimulator")
+        pygame.display.set_caption("Slight Fimulator {}".format(__version__))
 
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
@@ -223,7 +242,7 @@ Your score was {}.",
         pygame.time.set_timer(self.event_warn, 1000)
         self.event_toggletext = pygame.USEREVENT + 2
         pygame.time.set_timer(self.event_toggletext, 333)
-
+        
         self.done = False
         while not self.done:
             self.clock.tick(self.max_fps)
