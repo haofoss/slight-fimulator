@@ -605,10 +605,10 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
                 self.UNITS[self.unit_id]['pos']['name']),
                 self.x + self.size[0]*29/64, self.y + self.size[1]/8,
                 color_id='white', mode='topleft')
-        self.draw_text("HEADING: %.1f°" % self.plane.heading_degrees,
+        self.draw_text("HEADING: %.1f\xb0" % self.plane.heading_degrees,
                 self.x + self.size[0]*91/128, self.y + self.size[1]/16,
                 color_id='white', mode='midtop')
-        self.draw_text("PITCH: %.1f°" % self.plane.pitch_degrees,
+        self.draw_text("PITCH: %.1f\xb0" % self.plane.pitch_degrees,
                 self.x + self.size[0]*91/128, self.y + self.size[1]/12,
                 color_id='white', mode='midtop')
         self.draw_text("SCORE: %i" % self.plane.points,
