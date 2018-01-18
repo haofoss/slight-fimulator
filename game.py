@@ -604,17 +604,13 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         self.draw_text("PLANE LOCATION",
                 self.x + self.size[0]*29/64, self.y + self.size[1]/16,
                 color_id='white', mode='topleft')
-        self.draw_text("X: %%.%if" % self.UNITS[self.unit_id]['pos']['round-to']
-                % (self.plane.x * self.UNITS[self.unit_id]['pos']['value']),
+        self.draw_text(self.get_unit_text(self.plane.x, 'pos', 'X', False),
                 self.x + self.size[0]*29/64, self.y + self.size[1]/12,
                 color_id='white', mode='topleft')
-        self.draw_text("Z: %%.%if" % self.UNITS[self.unit_id]['pos']['round-to']
-                % (self.plane.z * self.UNITS[self.unit_id]['pos']['value']),
+        self.draw_text(self.get_unit_text(self.plane.z, 'pos', 'Z', False),
                 self.x + self.size[0]*29/64, self.y + self.size[1]*5/48,
                 color_id='white', mode='topleft')
-        self.draw_text("ALT: %%.%if %%s" % self.UNITS[self.unit_id]['pos']['round-to']
-                % (self.plane.altitude * self.UNITS[self.unit_id]['pos']['value'],
-                self.UNITS[self.unit_id]['pos']['name']),
+        self.draw_text(self.get_unit_text(self.plane.altitude, 'pos', 'ALT'),
                 self.x + self.size[0]*29/64, self.y + self.size[1]/8,
                 color_id='white', mode='topleft')
         self.draw_text("HEADING: %.1f\xb0" % self.plane.heading_degrees,
@@ -629,18 +625,16 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         self.draw_text("OBJECTIVE LOCATION",
                 self.x + self.size[0]*31/32, self.y + self.size[1]/16,
                 color_id='white', mode='topright')
-        self.draw_text("X: %%.%if" % self.UNITS[self.unit_id]['pos']['round-to']
-                % (closest_objective.x * self.UNITS[self.unit_id]['pos']['value']),
+        self.draw_text(self.get_unit_text(
+                closest_objective.x, 'pos', 'X', False),
                 self.x + self.size[0]*31/32, self.y + self.size[1]/12,
                 color_id='white', mode='topright')
-        self.draw_text("Z: %%.%if" % self.UNITS[self.unit_id]['pos']['round-to']
-                % (closest_objective.z * self.UNITS[self.unit_id]['pos']['value']),
+        self.draw_text(self.get_unit_text(
+                closest_objective.z, 'pos', 'Z', False),
                 self.x + self.size[0]*31/32, self.y + self.size[1]*5/48,
                 color_id='white', mode='topright')
-        self.draw_text("ALT: %%.%if %%s" % self.UNITS[self.unit_id]['pos']['round-to']
-                % (closest_objective.altitude
-                * self.UNITS[self.unit_id]['pos']['value'],
-                self.UNITS[self.unit_id]['pos']['name']),
+        self.draw_text(self.get_unit_text(
+                closest_objective.altitude, 'pos', 'ALT'),
                 self.x + self.size[0]*31/32, self.y + self.size[1]/8,
                 color_id='white', mode='topright')
 
@@ -654,9 +648,7 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         self.draw_text("GRAVITY", 
                 self.x + self.size[0]*3/128, self.y + self.size[1]*17/48,
                 color_id='white', mode='topleft')
-        self.draw_text("%%.%if %%s" % self.UNITS[self.unit_id]['speed']['round-to']
-                % (-self.plane.gravity * self.UNITS[self.unit_id]['speed']['value'],
-                self.UNITS[self.unit_id]['speed']['name']),
+        self.draw_text(self.get_unit_text(-self.plane.gravity, 'speed'),
                 self.x + self.size[0]*3/128, self.y + self.size[1]*3/8,
                 color_id='white', mode='topleft')
         self.draw_text("DAMAGE",
@@ -668,27 +660,21 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         self.draw_text("SPEED", 
                 self.x + self.size[0]*5/16, self.y + self.size[1]/4,
                 color_id='white', mode='topleft')
-        self.draw_text("%%.%if %%s" % self.UNITS[self.unit_id]['speed']['round-to']
-                % (self.plane.speed * self.UNITS[self.unit_id]['speed']['value'],
-                self.UNITS[self.unit_id]['speed']['name']),
+        self.draw_text(self.get_unit_text(self.plane.speed, 'speed'),
                 self.x + self.size[0]*5/16, self.y + self.size[1]*13/48,
                 color_id='white', mode='topleft')
         self.draw_text("HORIZ SPD",
                 self.x + self.size[0]*5/16, self.y + self.size[1]*17/48,
                 color_id='white', mode='topleft')
-        self.draw_text("%%.%if %%s" % self.UNITS[self.unit_id]['speed']['round-to']
-                % (self.plane.horizontal_speed
-                * self.UNITS[self.unit_id]['speed']['value'],
-                self.UNITS[self.unit_id]['speed']['name']),
+        self.draw_text(self.get_unit_text(
+                self.plane.horizontal_speed, 'speed'),
                 self.x + self.size[0]*5/16, self.y + self.size[1]*3/8,
                 color_id='white', mode='topleft')
         self.draw_text("VERT SPD",
                 self.x + self.size[0]*5/16, self.y + self.size[1]*11/24,
                 color_id='white', mode='topleft')
-        self.draw_text("%%.%if %%s" % self.UNITS[self.unit_id]['speed']['round-to']
-                % (self.plane.vertical_velocity
-                * self.UNITS[self.unit_id]['speed']['value'],
-                self.UNITS[self.unit_id]['speed']['name']),
+        self.draw_text(self.get_unit_text(
+                self.plane.vertical_velocity, 'speed'),
                 self.x + self.size[0]*5/16, self.y + self.size[1]*23/48,
                 color_id='white', mode='topleft')
 
@@ -750,6 +736,21 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         text_rect = txt.get_rect()
         text_rect.center = self.btn_units.center
         self.screen.blit(txt, text_rect)
+
+    def get_unit_text(self, value, unit_name, label=None, include_unit=True):
+        if label is None:
+            text = ("%%.%if"
+                % self.UNITS[self.unit_id][unit_name]['round-to']
+                % (value * self.UNITS[self.unit_id][unit_name]['value']))
+        else:
+            text = ("%%s: %%.%if"
+                % self.UNITS[self.unit_id][unit_name]['round-to']
+                % (label, value
+                * self.UNITS[self.unit_id][unit_name]['value']))
+        if include_unit:
+            text = ' '.join((text,
+                self.UNITS[self.unit_id][unit_name]['name']))
+        return text
 
     def control_plane(self):
         """Allows you to control the plane."""
