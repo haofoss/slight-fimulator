@@ -1,4 +1,4 @@
-# Slight Fimulator
+# Slight Fimulator v3.0.0alpha2
 A flight simulator written in Python.
 This is @MasterofNumbers17's Edition (The [original](https://github.com/haofoss/slight-fimulator) is by @haofoss).
 
