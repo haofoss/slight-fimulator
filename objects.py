@@ -34,6 +34,9 @@ class Airplane(pygame.sprite.Sprite):
     All units are stored internally in SI base units
     """
     NEXT_ID = 0
+
+    MAX_SPEED = 500
+    TERMINAL_VELOCITY = 100
     def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
             player_id=None, drawpos_multiplier=None):
         """Initializes the instance."""
@@ -267,8 +270,8 @@ class Airplane(pygame.sprite.Sprite):
                 self.vertical_roll_level = 0
                 self._autopilot_info['conditions'][
                         'vertical-roll-centered'] = True
-            if abs(50 - self._throttle) < 1:
-                self._throttle = 50
+            if abs(50 - self.throttle) < 1:
+                self.throttle = 50
                 self._autopilot_info['conditions']['throttle-centered'] = True
             if all(self._autopilot_info['conditions'].values()):
                 self._autopilot_info['enabled'] = False
@@ -337,11 +340,15 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         damage = 0
 
         # stall and gravity
-        if self.speed <= 100:
-            max_vert_roll = max((self.speed-50) / 12.5, 0)
+        if self.speed <= (self.MAX_SPEED / 5):
+            max_vert_roll = max((self.speed-(self.MAX_SPEED / 10))
+                    / (self.MAX_SPEED / 40), 0)
         else: max_vert_roll = 4
-        self.gravity += (((50 - self.speed) / 50 * 10)
-             - (self.gravity ** 2 / 1000))
+        self.gravity += (((self.MAX_SPEED / 10 - self.speed) / self.MAX_SPEED
+                * self.TERMINAL_VELOCITY) - (self.gravity ** 2
+                / (self.TERMINAL_VELOCITY ** 2 / 10)))
+##        self.gravity += (((50 - self.speed) / 50 * 10)
+##             - (self.gravity ** 2 / 1000))
         if self.gravity < 0: self.gravity = 0
         if self.altitude <= 0.1: self.gravity = 0
         
@@ -520,4 +527,4 @@ class AdvancedSpriteGroup(pygame.sprite.Group):
         for sprite in self:
             if sprite.id_ == key:
                 return sprite
-            raise Exception("Item {} not found.".format(key))
+            raise LookupError("Item {} not found.".format(key))

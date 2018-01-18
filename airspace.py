@@ -37,8 +37,7 @@ class Airspace(pygame.rect.Rect):
         """Initializes the instance."""
         if y == None: x, y, w, h = x # Input: 1 list
         elif w == None and h == None: (x, y), (w, h) = x, y # Input: 2 lists
-        super(Airspace, self).__init__(x, y, w, h)
-        self.panel = pygame.rect.Rect(x-(w/140), y-(h/140), w*71/70, h*71/70)
+        super(Airspace, self).__init__(x, y, self.AIRSPACE_DIM, self.AIRSPACE_DIM)
         self.planes = AdvancedSpriteGroup()
         self.objectives = AdvancedSpriteGroup()
 
@@ -49,10 +48,8 @@ class Airspace(pygame.rect.Rect):
                 ''.join(["\n%s" % repr(plane) for plane in self.planes]),
                 ''.join(["\n%s" % repr(obj) for obj in self.objectives]))
     
-    def draw(self, screen, images, color, panel_color):
+    def draw(self, screen, images):
         """Draws the airspace and everything inside it."""
-        pygame.draw.rect(screen, panel_color, self.panel)
-        pygame.draw.rect(screen, color, self)
         screen.blit(images['navcircle'], self.topleft)
         for plane in self.planes: 
             plane.draw(screen, images['navmarker'], self.x, self.y)
