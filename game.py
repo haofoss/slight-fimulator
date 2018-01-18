@@ -205,7 +205,6 @@ Your score was {}.",
         self.airspace.generate_objective(self.scaled_images['objectivemarker'])
         for obj in self.airspace.objectives: self.closest_objective = obj
 
-        self.key_held = [0, 0, 0]
         # Makes a list of length [# of keys registered by Pygame + 1]
         # The +1 is so key # -1 registers nothing
         self.keys_held = [0] * (len(pygame.key.get_pressed()) + 1)
@@ -252,7 +251,7 @@ Your score was {}.",
         self.event_log = pygame.USEREVENT
         pygame.time.set_timer(self.event_log, 5000)
         self.event_warn = pygame.USEREVENT + 1
-        pygame.time.set_timer(self.event_warn, 1000)
+        pygame.time.set_timer(self.event_warn, 2000)
         self.event_toggletext = pygame.USEREVENT + 2
         pygame.time.set_timer(self.event_toggletext, 333)
         

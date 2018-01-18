@@ -36,7 +36,7 @@ class Airplane(pygame.sprite.Sprite):
     NEXT_ID = 0
 
     MAX_SPEED = 500
-    TERMINAL_VELOCITY = 100
+    TERMINAL_VELOCITY = MAX_SPEED / 5 # Why not?
     def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
             player_id=None, drawpos_multiplier=None):
         """Initializes the instance."""
@@ -359,8 +359,8 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         self.pitch_degrees = self.get_pitch(self.vertical_roll_level)
 
         # acceleration
-        self.acceleration = (self.throttle ** 2 / 250
-                - self.speed ** 2 / 6250)
+        self.acceleration = (self.throttle**2 / 250
+                - self.speed**2 * 40 / self.MAX_SPEED**2)
         self.speed += (self.acceleration * tick_duration)
         
         hspeed = self.horizontal_speed * tick_duration
@@ -371,8 +371,9 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         if self.altitude < 0.1: self.altitude = 0
 
         # overspeed damage
-        if self.speed > 375:
-            damage += (self.speed - 375) ** 2 / 25000 * tick_duration
+        if self.speed > self.MAX_SPEED * 0.75:
+            damage += ((self.speed - self.MAX_SPEED*0.75) ** 2
+                    / (self.MAX_SPEED**2*10) * tick_duration)
         if self._throttle > 75:
             damage += (self._throttle - 75) ** 2 / 1000 * tick_duration
 
@@ -381,9 +382,6 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
             self.roll_level *= (0.5 ** tick_duration)
             self.vertical_roll_level *= (0.5 ** tick_duration)
             self._throttle = 50 + (self.throttle-50) * (0.5 ** tick_duration)
-##            window.status = ["Autopilot engaged..."]
-##            if not self.autopilot_enabled:
-##                window.sounds['apdisconnect'].play()
 
         # deal damage
         self.health -= damage
