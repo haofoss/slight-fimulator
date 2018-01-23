@@ -237,8 +237,8 @@ Your score was {}.",
                 "show": True
             },
             "autopilot": {
-                "condition": False,
-                "show": True
+                "condition": True,
+                "show": False
             }
         }
 
