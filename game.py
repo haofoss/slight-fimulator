@@ -3,15 +3,18 @@
 """The game code.
 
 Slight Fimulator - Flight simulator in Python
-Copyright (C) 2017 Hao Tian and Adrien Hopkins
+Copyright (C) 2017, 2018 Hao Tian and Adrien Hopkins
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
+
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
+
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
@@ -189,7 +192,6 @@ Your score was {}.",
         self.load_resources()
 
         self.screen = pygame.display.set_mode(self.size, pygame.RESIZABLE)
-##        self.screen = pygame.display.set_mode(self.size)
         pygame.display.set_caption("Slight Fimulator v{}".format(__version__))
 
         pygame.mixer.pre_init(44100, -16, 2, 2048)
@@ -237,8 +239,8 @@ Your score was {}.",
                 "show": True
             },
             "autopilot": {
-                "condition": False,
-                "show": True
+                "condition": True,
+                "show": False
             }
         }
 
@@ -698,23 +700,19 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
                     font_id="large", color_id='white', mode='topleft')
 
         # warnings
-        if self.warnings["pullup"]["condition"]:
+        if self.show_warning("pullup"):
             self.screen.blit(self.scaled_images['msg_pullup'],
                     (self.x + self.size[0]*5/32, self.y + self.size[1]*49/96))
-        if self.warnings["terrain"]["condition"]:
+        if self.show_warning("terrain"):
             self.screen.blit(self.scaled_images['msg_warning'],
                     (self.x + self.size[0]*187/1280, self.y + self.size[1]*7/40))
-        if self.warnings["stall"]["condition"]:
+        if self.show_warning("stall"):
             self.screen.blit(self.scaled_images['msg_stall'],
                     (self.x + self.size[0]*33/1280, self.y + self.size[1]*491/960))
-##        if self.warnings["dontsink"]:
-##            logging.debug("Activated warning DONTSINK")
-##            self.screen.blit(self.scaled_images['msg_dontsink'],
-##                    (self.x + self.size[0]*19/80, self.y + self.size[1]*109/192))
-        if self.warnings["bank_angle"]["condition"]:
+        if self.show_warning("bank_angle"):
             self.screen.blit(self.scaled_images['msg_bankangle'],
                     (self.x + self.size[0]/40, self.y + self.size[1]*109/192))
-        if self.warnings["overspeed"]["condition"]:
+        if self.show_warning("overspeed"):
             self.screen.blit(self.scaled_images['msg_overspeed'],
                     (self.x + self.size[0]*73/256, self.y + self.size[1]*49/96))
         # autopilot message
@@ -822,51 +820,6 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
 
     def play_sounds(self):
         """Plays warning sounds."""
-        # old warning stuff...
-##        if (self.plane.altitude <= 500
-##                and self.plane.total_vertical_velocity <= -20):
-##            self.warnings['pulluploop'] = True
-##            self.status = ["PRESS AND HOLD", "THE \"DOWN\" KEY!"]
-##        elif (self.plane.altitude < 1000
-##                and self.plane.total_vertical_velocity > 0
-##                and self.plane.throttle < 50):
-##            self.warnings['dontsinkloop'] = True
-##            self.status = ["Be careful not to stall."]
-##        elif self.plane.altitude < 1000 and self.plane.speed > 250:
-##            self.warnings["terrainloop"] = True
-##        elif (self.plane.altitude < 1000 and self.plane.speed <= 250
-##                and self.plane.total_vertical_velocity <= -20):
-##            self.warnings['pulluploop2'] = True
-##            self.status = ["DO NOT DESCEND!"]
-##        elif (abs(self.plane.altitude - self.closest_objective.altitude)
-##                <= self.airspace.ALTITUDE_WITHIN):
-##            self.status = ["Approaching objective", "altitude..."]
-##            # if we just entered objective altitude range
-##            if not self.plane._within_objective_range:
-##                self.warnings["altitude"] = True
-##                self.plane._within_objective_range = True
-##        # if we are outside objective altitude range
-##        else:
-##            self.plane._within_objective_range = False
-##            self.status = ["Fly to the objective."]
-##        if abs(self.plane.roll_degrees) >= 30:
-##            self.warnings['bankangle-old'] = True
-##        if self.plane.speed < 100 and self.plane.altitude != 0:
-##            self.warnings['stall'] = True
-##        elif self.plane.speed > 375:
-##            self.warnings['overspeed'] = True
-##
-##        # disable loops
-##        if self.plane.altitude > 500:
-##            self.warnings['pulluploop'] = False
-##        if not (self.plane.altitude < 1000 and self.plane.vertical_velocity > 0
-##                and self.plane.throttle > 50):
-##            self.warnings['dontsinkloop'] = False
-##        if not (self.plane.altitude < 1000 and self.plane.speed > 250):
-##            self.warnings["terrainloop"] = False
-##        if not (self.plane.altitude < 1000 and self.plane.speed <= 250):
-##            self.warnings['pulluploop2'] = False
-        
         if self.show_warning("pullup"):
             self.sounds['pullup'].play()
         elif self.show_warning("terrain"):
@@ -883,30 +836,6 @@ creating directory {}".format(os.path.abspath(self.LOG_PATH)))
         if self.show_warning("autopilot"):
             self.sounds['apdisconnect'].play()
             self.warnings['autopilot']['show'] = False
-##        if self.warnings["pulluploop"]:
-##            if self.warnings["pullup-toggle"]:
-##                self.warnings["pullup"] = True
-##                self.warnings["pullup-toggle"] = False
-##            else:
-##                self.warnings["pullup-toggle"] = True
-##        if self.warnings["pulluploop2"]:
-##            if self.warnings["pullup-toggle2"]:
-##                self.warnings["pullup"] = True
-##                self.warnings["pullup-toggle2"] = False
-##            else:
-##                self.warnings["pullup-toggle2"] = True
-##        if self.warnings["terrainloop"]:
-##            if self.warnings["terrain-toggle"]:
-##                self.warnings["terrain"] = True
-##                self.warnings["terrain-toggle"] = False
-##            else:
-##                self.warnings["terrain-toggle"] = True
-##        if self.warnings["dontsinkloop"]:
-##            if self.warnings["dontsink-toggle"]:
-##                self.warnings["dontsink"] = True
-##                self.warnings["dontsink-toggle"] = False
-##            else:
-##                self.warnings["dontsink-toggle"] = True
 
     def log(self):
         """Writes in the log.
