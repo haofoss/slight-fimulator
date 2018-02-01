@@ -33,7 +33,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 
 class Airplane(pygame.sprite.Sprite):
     """The class for an airplane sprite.
-    
+
     All units are stored internally in SI base units
     """
     NEXT_ID = 0
@@ -41,13 +41,14 @@ class Airplane(pygame.sprite.Sprite):
     MAX_SPEED = 500
     TERMINAL_VELOCITY = MAX_SPEED / 5 # Why not?
     def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
-            player_id=None, drawpos
+                 player_id=None, drawpos_multiplier=None):
         """Initialize the instance."""
         super(Airplane, self).__init__()
-        if y == None and altitude != None: x, y = x
-        elif y == None: x, y, altitude = x
-        
-        if player_id == None: # Get an ID for the airplane
+        if y is None and altitude is not None:
+            x, y = x
+        elif y is None:
+            x, y, altitude = x
+        if player_id is None: # Get an ID for the airplane
             self._id = Airplane.NEXT_ID
             Airplane.NEXT_ID += 1
         else: self._id = player_id
@@ -64,14 +65,14 @@ class Airplane(pygame.sprite.Sprite):
         self._roll_level = 0
         self._vertical_roll_level = 0
         self._autopilot_info = {
-            'enabled': False, 
+            'enabled': False,
             'conditions': {
-                'roll-centered': True, 
-                'vertical-roll-centered': True, 
+                'roll-centered': True,
+                'vertical-roll-centered': True,
                 'throttle-centered': True
             }
         }
-        
+
         self._within_objective_range = False
         self._points = 0
         self._exit_code = 0
@@ -84,11 +85,13 @@ class Airplane(pygame.sprite.Sprite):
         """Display some important stats about the plane."""
         msg = ("%i\t%i\t%i\t%i\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t\
 %i\t%.1f\t" % (self.id_, self.x, self.z,
-                self.altitude, self.speed, self.acceleration,
-                self.vertical_velocity, self.heading, self.roll, self.pitch,
-                self.points, 100 - self.health))
-        if show_labels: return "%s\n%s" % (self.labels(), msg)
-        else: return msg
+               self.altitude, self.speed, self.acceleration,
+               self.vertical_velocity, self.heading, self.roll,
+               self.pitch, self.points, 100 - self.health))
+        if show_labels:
+            return "%s\n%s" % (self.labels(), msg)
+        else:
+            return msg
 
     ## variables
     @property
@@ -257,7 +260,7 @@ class Airplane(pygame.sprite.Sprite):
     @acceleration.setter
     def acceleration(self, new_value):
         """Set the plane's acceleration in m/s."""
-        if not isinstance(new_value, (int,  float)):
+        if not isinstance(new_value, (int, float)):
             raise ValueError("Acceleration must be a number")
         self._acceleration = new_value
     @property
@@ -267,10 +270,12 @@ class Airplane(pygame.sprite.Sprite):
     @throttle.setter
     def throttle(self, new_value):
         """Set the plane's throttle in m/s."""
-        if not isinstance(new_value, (int,  float)):
+        if not isinstance(new_value, (int, float)):
             raise ValueError("Throttle must be a number")
-        if new_value < 0: new_value = 0
-        elif new_value > 100: new_value = 100
+        if new_value < 0:
+            new_value = 0
+        elif new_value > 100:
+            new_value = 100
         self._throttle = new_value
     @property
     def roll(self):
@@ -290,8 +295,10 @@ class Airplane(pygame.sprite.Sprite):
         """Set the plane's horizontal roll level."""
         if not isinstance(new_value, (int, float)):
             raise TypeError("Roll Level must be a number.")
-        if new_value < -4: new_value = -4
-        elif new_value > 4: new_value = 4
+        if new_value < -4:
+            new_value = -4
+        elif new_value > 4:
+            new_value = 4
         self._roll_level = new_value
     @property
     def vertical_roll_level(self):
@@ -302,26 +309,29 @@ class Airplane(pygame.sprite.Sprite):
         """Set the plane's vertical roll level."""
         if not isinstance(new_value, (int, float)):
             raise TypeError("Vertical Roll Level must be a number.")
-        if new_value < -4: new_value = -4
-        elif new_value > 4: new_value = 4
+        if new_value < -4:
+            new_value = -4
+        elif new_value > 4:
+            new_value = 4
         self._vertical_roll_level = new_value
     @property
     def autopilot_enabled(self):
         """Get the plane's autopilot's status."""
-        if not self._autopilot_info['enabled']: return False
+        if not self._autopilot_info['enabled']:
+            return False
         else: # See if the autopilot can be disabled
             if abs(self.roll_level) < 0.1:
                 self.roll_level = 0
                 self._autopilot_info['conditions'][
-                        'roll-centered'] = True
+                    'roll-centered'] = True
             if abs(self.vertical_roll_level) < 0.1:
                 self.vertical_roll_level = 0
                 self._autopilot_info['conditions'][
-                        'vertical-roll-centered'] = True
+                    'vertical-roll-centered'] = True
             if abs(50 - self.throttle) < 1:
                 self.throttle = 50
                 self._autopilot_info['conditions'][
-                        'throttle-centered'] = True
+                    'throttle-centered'] = True
             if all(self._autopilot_info['conditions'].values()):
                 self._autopilot_info['enabled'] = False
             return self._autopilot_info['enabled']
@@ -359,25 +369,26 @@ class Airplane(pygame.sprite.Sprite):
         """Get the plane's rect."""
         rect_ = self.image.get_rect()
         rect_.center = [self.x / self._drawpos_multiplier[0],
-                self.z / self._drawpos_multiplier[1]]
+                        self.z / self._drawpos_multiplier[1]]
         return rect_
-        
+
     def enable_autopilot(self):
         """Enable the autopilot."""
         self._autopilot_info['enabled'] = True
         for condition in self._autopilot_info['conditions']:
             self._autopilot_info['conditions'][condition] = False
-    
+
     def labels(self):
         """Output the labels used in __repr__."""
-        return ("ID:\tX:\tY:\tALT:\tSPD:\tACCEL:\tVSPD:\t\
-HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
+        return "ID:\tX:\tY:\tALT:\tSPD:\tACCEL:\tVSPD:\t\
+HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t"
 
     def draw(self, screen, image, airspace_x, airspace_y=None):
         """Draw the airplane."""
-        if airspace_y == None: airspace_x, airspace_y = airspace_x
-        image_rotated = pygame.transform.rotate(image,
-            -self.heading_degrees)
+        if airspace_y is None:
+            airspace_x, airspace_y = airspace_x
+        image_rotated = pygame.transform.rotate(
+            image, -self.heading_degrees)
         # Calculate the image's position
         draw_rect = image_rotated.get_rect()
         draw_rect.center = self.rect.center
@@ -390,35 +401,37 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         """Update the plane."""
         tick_duration = time.time() - self._time
         self._time = time.time()
-        
+
         # Update Scale
         if new_drawpos_multiplier != None:
             self._drawpos_multiplier = new_drawpos_multiplier
-        
+
         # initialize damage
         damage = 0
 
         # stall and gravity
         if self.speed <= (self.MAX_SPEED / 5):
             max_vert_roll = max((self.speed-(self.MAX_SPEED / 10))
-                    / (self.MAX_SPEED / 40), 0)
+                                / (self.MAX_SPEED / 40), 0)
         else: max_vert_roll = 4
         self.gravity += (((self.MAX_SPEED / 10 - self.speed)
-                / self.MAX_SPEED * self.TERMINAL_VELOCITY)
-                - (self.gravity ** 2 / (self.TERMINAL_VELOCITY ** 2
-                / 10)))
-        if self.gravity < 0: self.gravity = 0
-        if self.altitude <= 0.1: self.gravity = 0
-        
+                          / self.MAX_SPEED * self.TERMINAL_VELOCITY)
+                         - (self.gravity ** 2
+                            / (self.TERMINAL_VELOCITY ** 2 / 10)))
+        if self.gravity < 0:
+            self.gravity = 0
+        if self.altitude <= 0.1:
+            self.gravity = 0
+
         # get heading and pitch
         self.heading += (self.roll * tick_duration)
         if self.vertical_roll_level > max_vert_roll:
             self.vertical_roll_level = max_vert_roll
-        self.pitch_degrees = self.get_pitch(self.vertical_roll_level)
+        self.pitch_degrees = self.vertical_roll_level * 10
 
         # acceleration
         self.acceleration = (self.throttle**2 / 250
-                - self.speed**2 * 40 / self.MAX_SPEED**2)
+                             - self.speed**2 * 40 / self.MAX_SPEED**2)
         self.speed += (self.acceleration * tick_duration)
 
         # move plane
@@ -427,12 +440,13 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
         self.x += math.sin(self.heading) * hspeed
         self.z -= math.cos(self.heading) * hspeed
         self.altitude += vspeed
-        if self.altitude < 0.1: self.altitude = 0
+        if self.altitude < 0.1:
+            self.altitude = 0
 
         # overspeed damage
         if self.speed > self.MAX_SPEED * 0.75:
             damage += ((self.speed - self.MAX_SPEED*0.75) ** 2
-                    / (self.MAX_SPEED**2*10) * tick_duration)
+                       / (self.MAX_SPEED**2*10) * tick_duration)
         if self._throttle > 75:
             damage += (self._throttle - 75) ** 2 / 1000 * tick_duration
 
@@ -455,14 +469,15 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t")
 class Objective(pygame.sprite.Sprite):
     """The class for an objective sprite."""
     NEXT_ID = 0
-    def __init__(self, image, x=(0, 0, 0), y=None, altitude=None, obj_id=None,
-            airspace_dim=[700, 700]):
+    def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
+                 obj_id=None, airspace_dim=[700, 700]):
         """Initialize the instance."""
         super(Objective, self).__init__()
-        if y == None and altitude != None: x, y = x
-        elif y == None: x, y, altitude = x
-        
-        if obj_id == None: # Get an ID for the objective
+        if y is None and altitude is not None:
+            x, y = x
+        elif y is None:
+            x, y, altitude = x
+        if obj_id is None: # Get an ID for the objective
             self._id = Objective.NEXT_ID
             Objective.NEXT_ID += 1
         else: self._id = obj_id
@@ -475,10 +490,12 @@ class Objective(pygame.sprite.Sprite):
     def __repr__(self, show_labels=True):
         """Display some important stats about the objective."""
         msg = "%i\t%i\t%i\t%i\t" % (self.id_, self.x, self.z,
-                self.altitude)
-        if show_labels: return "%s\n%s" % (self.labels(), msg)
-        else: return msg
-    
+                                    self.altitude)
+        if show_labels:
+            return "%s\n%s" % (self.labels(), msg)
+        else:
+            return msg
+
     @property
     def id_(self):
         """Get the objective's ID."""
@@ -577,13 +594,13 @@ class Objective(pygame.sprite.Sprite):
         """Get the plane's rect."""
         rect_ = self.image.get_rect()
         rect_.center = [self.x / self._drawpos_multiplier[0],
-                self.z / self._drawpos_multiplier[1]]
+                        self.z / self._drawpos_multiplier[1]]
         return rect_
 
     def labels(self):
         """Output the labels used in __repr__."""
         return "ID:\tX:\tY:\tALT:\t"
-        
+
     def update(self, new_drawpos_multiplier=None):
         """Update the objective."""
         if new_drawpos_multiplier != None:
@@ -591,7 +608,8 @@ class Objective(pygame.sprite.Sprite):
 
     def draw(self, screen, image, airspace_x, airspace_y=None):
         """Draw the objective."""
-        if airspace_y == None: airspace_x, airspace_y = airspace_x
+        if airspace_y is None:
+            airspace_x, airspace_y = airspace_x
         # Calculate the image's position
         draw_rect = self.rect.copy()
         draw_rect.x += airspace_x

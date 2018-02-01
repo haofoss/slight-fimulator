@@ -46,41 +46,41 @@ class Client(pygame.rect.Rect):
     DEFAULT_ASPECT_RATIO = DEFAULT_SIZE[0] / DEFAULT_SIZE[1]
     NEXT_ID = 0 # The next unused ID for this class
     EXIT_TITLES = (
-            "UNEXPECTED",
-            "Congratulations",
-            "Closed",
-            "Failed",
-            "Failed",
-            "Failed",
-            "Failed",
-            "UNEXPECTED"
+        "UNEXPECTED",
+        "Congratulations",
+        "Closed",
+        "Failed",
+        "Failed",
+        "Failed",
+        "Failed",
+        "UNEXPECTED"
     )
     EXIT_REASONS = (
-            "Exited with exitcode 0 (unexpected). Please report.",
-            "You have completed the objective with a score of {}.",
-            "The game has been closed. Your score was {}.",
-            "You crashed your aircraft. Your score was {}.",
-            "Left the operation area. Your score was {}.",
-            "The aircraft was overstressed. Your score was {}.",
-            "The aircraft exceeded its service ceiling altitude.  \
+        "Exited with exitcode 0 (unexpected). Please report.",
+        "You have completed the objective with a score of {}.",
+        "The game has been closed. Your score was {}.",
+        "You crashed your aircraft. Your score was {}.",
+        "Left the operation area. Your score was {}.",
+        "The aircraft was overstressed. Your score was {}.",
+        "The aircraft exceeded its service ceiling altitude.  \
 Your score was {}.",
-            "Exited with exitcode 7 (unexpected). Please report."
+        "Exited with exitcode 7 (unexpected). Please report."
     )
     DEFAULT_CONTROLS = { # -1 means no key
-            'horiz-': pygame.K_LEFT,
-            'horiz+': pygame.K_RIGHT,
-            'vert-': pygame.K_UP,
-            'vert+': pygame.K_DOWN,
-            'throttle+': pygame.K_F4,
-            'throttle-': pygame.K_F2,
-            'throttle-0': pygame.K_F1,
-            'throttle-25': pygame.K_F3,
-            'throttle-50': -1,
-            'throttle-75': pygame.K_F5,
-            'throttle-100': -1,
-            'autopilot': pygame.K_z,
-            'pause': pygame.K_PAUSE,
-            'quit': pygame.K_ESCAPE,
+        'horiz-': pygame.K_LEFT,
+        'horiz+': pygame.K_RIGHT,
+        'vert-': pygame.K_UP,
+        'vert+': pygame.K_DOWN,
+        'throttle+': pygame.K_F4,
+        'throttle-': pygame.K_F2,
+        'throttle-0': pygame.K_F1,
+        'throttle-25': pygame.K_F3,
+        'throttle-50': -1,
+        'throttle-75': pygame.K_F5,
+        'throttle-100': -1,
+        'autopilot': pygame.K_z,
+        'pause': pygame.K_PAUSE,
+        'quit': pygame.K_ESCAPE,
     }
     UNITS = ( # The unit sets
         {
@@ -131,23 +131,26 @@ Your score was {}.",
             self.resources_path = os.path.join(self.PATH, "resources")
         elif "resources.zip" in os.listdir(self.PATH):
             self.resources_path = os.path.join(self.PATH, "resources.zip")
-        else: raise FileNotFoundError("Resources not found!")
+        else: raise Exception("Resources not found!")
         self.clock = pygame.time.Clock() # Controls ticking
         self.max_fps = 60 # Controls max fps
         # Gets a player ID
-        if player_id == None:
+        if player_id is None:
             self._id = Client.NEXT_ID
             Client.NEXT_ID += 1
         else: self._id = player_id
         # Parses command line arguments
         self.parser = argparse.ArgumentParser()
-        self.parser.add_argument('-v', '--version', action='store_true',
-                help='display the version and exit')
-        self.parser.add_argument('--log-to-file', action='store_true',
-                help='log to a file instead of stdout')
-        self.parser.add_argument('--log-level', default='WARNING',
-                choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                help='the least important log item type to display')
+        self.parser.add_argument(
+            '-v', '--version', action='store_true',
+            help='display the version and exit')
+        self.parser.add_argument(
+            '--log-to-file', action='store_true',
+            help='log to a file instead of stdout')
+        self.parser.add_argument(
+            '--log-level', default='WARNING',
+            choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+            help='the least important log item type to display')
         self.args = self.parser.parse_args()
         # Handles command line arguments
         if self.args.version:
@@ -168,7 +171,7 @@ Your score was {}.",
     @stage.setter
     def stage(self, new_value):
         """Set the stage variable to change the stage."""
-        self.GAME_STAGES[new_value] (self)
+        self.GAME_STAGES[new_value](self)
         self._stage = new_value
     @property
     def exit_code(self):
@@ -176,13 +179,13 @@ Your score was {}.",
         if self.plane.health <= 0:
             return 5 # Overstressed the aircraft
         elif (self.plane.points >= self.airspace.POINTS_REQUIRED
-                and self.plane.altitude <= 0):
+              and self.plane.altitude <= 0):
             return 1 # You Won!
         # position-related exit
         if self.plane.altitude > self.airspace.MAX_ALTITUDE:
             return 6
         elif (self.plane.altitude <= 0
-                and self.plane.total_vertical_velocity < -20):
+              and self.plane.total_vertical_velocity < -20):
             return 3
         elif not self.airspace.in_bounds(self.plane):
             return 4
@@ -267,7 +270,7 @@ Your score was {}.",
             self.fps = self.clock.get_fps() # Stores FPS in a variable
             self.events = pygame.event.get() # Gets events
             self.screen.fill(self.colors['background'])
-            self.GAME_LOOPS[self.stage] (self) # Runs the correct loop
+            self.GAME_LOOPS[self.stage](self) # Runs the correct loop
             for event in self.events:
                 if event.type == pygame.QUIT or self.stage == 'END':
                     self.done = True
@@ -278,29 +281,33 @@ Your score was {}.",
                     self.update_screen_size(event.size)
         # This runs when the program is finished running
         pygame.quit() # Exits Pygame
-        if self.resources_path.endswith('.zip'): self.resources.close()
+        if self.resources_path.endswith('.zip'): # Close Zip
+            self.resources.close()
 
     def prepare_log(self):
         """Prepare the log."""
         if not self.log_to_file: # Settings for output logging
-            logging.basicConfig(datefmt="%H:%M:%S", format=
-                    "%(asctime)s    %(levelname)s\t%(message)s",
-                    level=self.log_level)
+            logging.basicConfig(
+                datefmt="%H:%M:%S", format=
+                "%(asctime)s    %(levelname)s\t%(message)s",
+                level=self.log_level)
         else: # Settings for file logging
             warn = False
             if not os.path.isdir(self.LOG_PATH):
                 # If no logging directory, create one
                 os.makedirs(self.LOG_PATH)
                 warn = True
-            logging.basicConfig(datefmt="%H:%M:%S", format=
-                    "%(asctime)s    %(levelname)s\t%(message)s",
-                    filename=os.path.join(self.LOG_PATH,
-                    "{}.log".format(datetime.datetime.now().
-                    strftime("%Y-%m-%d-%H-%M-%S"))),
-                    level=self.log_level)
+            logging.basicConfig(
+                datefmt="%H:%M:%S", level=self.log_level,
+                format="%(asctime)s    %(levelname)s\t%(message)s",
+                filename=os.path.join(
+                    self.LOG_PATH, "{}.log".format(
+                        datetime.datetime.now().strftime(
+                            "%Y-%m-%d-%H-%M-%S"))))
             if warn: # If a logging directory was created, warn the user
-                logging.warning("No logging directory found, \
-created directory {}".format(os.path.abspath(self.LOG_PATH)))
+                logging.warning(
+                    "No logging directory found, created directory %s",
+                    os.path.abspath(self.LOG_PATH))
 
         # If on debug mode, log headings
         output = []
@@ -316,12 +323,14 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
         output.append("TICK:\t")
         for plane_id in range(len(self.airspace.planes)):
             for plane in self.airspace.planes:
-                if plane.id_ == plane_id: break
-            output.append(plane.labels())
+                if plane.id_ == plane_id:
+                    output.append(plane.labels())
+                    break
         for objective_id in range(len(self.airspace.objectives)):
             for objective in self.airspace.objectives:
-                if objective.id_ == objective_id: break
-            output.append(objective.labels())
+                if objective.id_ == objective_id:
+                    output.append(objective.labels())
+                    break
         logging.debug(''.join(output)) # Log it!
 
     def load_resources(self):
@@ -330,9 +339,9 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
         Images, Sounds, Colors and Fonts use Pygame Objects.
         Music uses filepaths/file objects (both compatible with
         pygame.mixer.music.load)
-        
+
         Directory Layout:
-        
+
         Root folder or zip archive
          -> Images
              -> insert all image files, any pygame-compatible extension
@@ -365,28 +374,30 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                     image_bytes_io = io.BytesIO(image_data)
                     image = pygame.image.load(image_bytes_io)
                     image_name = \
-                            filename.lower() [7:].split('.') [0]
+                            filename.lower()[7:].split('.')[0]
                     self.images[image_name] = image
                 elif filename.startswith('Sounds/'): # Load Sounds
                     sound_data = self.resources.read(filename)
                     sound_bytes_io = io.BytesIO(sound_data)
                     sound = pygame.mixer.Sound(sound_bytes_io)
                     sound_name = \
-                            filename.lower() [7:].split('.') [0]
+                            filename.lower()[7:].split('.')[0]
                     self.sounds[sound_name] = sound
                 elif filename.startswith('Music/'): # Load Music
                     music_data = self.resources.read(filename)
                     music_bytes_io = io.BytesIO(music_data)
                     music_name = \
-                            filename.lower() [6:].split('.') [0]
+                            filename.lower()[6:].split('.')[0]
                     self.music_files[music_name] = music_bytes_io
                 # Load Colours
                 elif filename in ['colors.txt', 'colours.txt']:
                     colors_file = self.resources.open(filename)
                     for line in colors_file.readlines():
                         line = str(line.decode('utf-8'))
-                        if line.strip() == '': continue
-                        elif line.strip() [0] == '#': continue
+                        if line.strip() == '':
+                            continue
+                        elif line.strip()[0] == '#':
+                            continue
                         colorname, color = line.split('=')
                         colorname = colorname.strip()
                         color = pygame.color.Color(color.strip())
@@ -396,8 +407,10 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                     fonts_file = self.resources.open(filename)
                     for line in fonts_file.readlines():
                         line = str(line.decode('utf-8'))
-                        if line.strip() == '': continue
-                        elif line.strip() [0] == '#': continue
+                        if line.strip() == '':
+                            continue
+                        elif line.strip()[0] == '#':
+                            continue
                         fontname, font = line.split('=')
                         fontname = fontname.strip()
                         font_info = font.strip().split(' ')
@@ -407,48 +420,52 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                             font = None
                         self.font_data[fontname] = font, float(
                             font_info[-1])
-                        font = pygame.font.Font(font, size)
-                        self.fonts[fontname] = font
+                        self.fonts[fontname] = pygame.font.Font(
+                            font, size)
         else: # Directory
             images_path = os.path.join(self.resources_path, "Images")
             for image_name in os.listdir(images_path): # Load Images
                 image_file = os.path.join(images_path, image_name)
-                image_name = image_name.split('.') [0]
+                image_name = image_name.split('.')[0]
                 image = pygame.image.load(image_file)
                 self.images[image_name] = image
             sounds_path = os.path.join(self.resources_path, "Sounds")
             for sound_name in os.listdir(sounds_path): # Load Sounds
                 sound_file = os.path.join(sounds_path, sound_name)
-                sound_name = sound_name.split('.') [0]
+                sound_name = sound_name.split('.')[0]
                 sound = pygame.mixer.Sound(sound_file)
                 self.sounds[sound_name] = sound
             music_path = os.path.join(self.resources_path, "Music")
             for music_name in os.listdir(music_path): # Load Music
                 music_file = os.path.join(music_path, music_name)
-                music_name = music_name.split('.') [0]
+                music_name = music_name.split('.')[0]
                 self.music_files[music_name] = music_file
             if "colors.txt" in os.listdir(self.resources_path):
-                colors_file = open(os.path.join(self.resources_path,
-                        "colors.txt"), 'rt')
+                colors_file = open(os.path.join(
+                    self.resources_path, "colors.txt"), 'rt')
             elif "colours.txt" in os.listdir(self.resources_path):
-                colors_file = open(os.path.join(self.resources_path,
-                        "colours.txt"), 'rt')
+                colors_file = open(os.path.join(
+                    self.resources_path, "colours.txt"), 'rt')
             else: colors_file = None
             if colors_file != None: # Load Colours
                 for line in colors_file.readlines():
-                    if line.strip() == '': continue
-                    elif line.strip() [0] == '#': continue
+                    if line.strip() == '':
+                        continue
+                    elif line.strip()[0] == '#':
+                        continue
                     colorname, color = line.split('=')
                     colorname = colorname.strip()
                     color = pygame.color.Color(color.strip())
                     self.colors[colorname] = color
                 colors_file.close()
             try: # Load Fonts
-                fonts_file = open(os.path.join(self.resources_path,
-                        "fonts.txt"))
+                fonts_file = open(os.path.join(
+                    self.resources_path, "fonts.txt"))
                 for line in fonts_file.readlines():
-                    if line.strip() == '': continue
-                    elif line.strip() [0] == '#': continue
+                    if line.strip() == '':
+                        continue
+                    elif line.strip()[0] == '#':
+                        continue
                     fontname, font = line.split('=')
                     fontname = fontname.strip()
                     font_info = font.strip().split(' ')
@@ -457,21 +474,25 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                     if font.lower() in ['none', 'default']:
                         font = None
                     self.font_data[fontname] = font, float(font_info[-1])
-                    font = pygame.font.Font(font, size)
-                    self.fonts[fontname] = font
+                    self.fonts[fontname] = pygame.font.Font(font, size)
                 fonts_file.close()
-            except Exception as e: logging.warning(str(e))
+            except Exception as e:
+                logging.warning(str(e))
 
     def draw_text(self, text, x, y=None, mode="center",
-            color_id=(0, 0, 0), font_id='default', antialias=1,
-            bg_color=None):
+                  color_id=(0, 0, 0), font_id='default', antialias=1,
+                  bg_color=None):
         """Draw text \"text\" at x, y."""
-        if y == None: x, y = x # Handles iterable arguments
+        if y is None:
+            x, y = x # Handles iterable arguments
         # Gets the colour
-        if color_id in self.colors.keys(): color = self.colors[color_id]
-        else: color = color_id
-        if type(color) == str: color = pygame.color.Color(color)
-        elif type(color) == tuple or type(color) == list:
+        if color_id in self.colors.keys():
+            color = self.colors[color_id]
+        else:
+            color = color_id
+        if isinstance(color, str):
+            color = pygame.color.Color(color)
+        elif isinstance(color, (list, tuple)):
             if len(color) == 3:
                 r, g, b = color
                 color = pygame.color.Color(r, g, b)
@@ -479,9 +500,9 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                 r, g, b, a = color
                 color = pygame.color.Color(r, g, b, a)
         # Gets the background colour
-        if type(bg_color) == str:
+        if isinstance(bg_color, str):
             bg_color = pygame.color.Color(bg_color)
-        elif type(bg_color) == tuple or type(bg_color) == list:
+        elif isinstance(bg_color, (list, tuple)):
             if len(bg_color) == 3:
                 r, g, b = bg_color
                 bg_color = pygame.color.Color(r, g, b)
@@ -489,17 +510,20 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                 r, g, b, a = bg_color
                 bg_color = pygame.color.Color(r, g, b, a)
         # Gets the font
-        if font_id in self.fonts.keys(): font = self.fonts[font_id]
+        if font_id in self.fonts.keys():
+            font = self.fonts[font_id]
         else: # no font found
             try:
                 font_info = font_id.strip().split(' ')
-                font = ' '.join(font_info[:-1])
+                font_name = ' '.join(font_info[:-1])
                 size = font_info[-1]
-                if '.' in size: size = float(size) * self.size[1]
-                else: size = int(size)
+                if '.' in size:
+                    size = float(size) * self.size[1]
+                else:
+                    size = int(size)
                 if font.lower() in ['none', 'default']:
-                    font = None
-                font = pygame.font.Font(font, size)
+                    font_name = None
+                font = pygame.font.Font(font_name, size)
             except:
                 raise ValueError("Invalid font %s" % font_id)
         # Calculate the text position
@@ -507,7 +531,8 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
         text_rect = text_obj.get_rect()
         setattr(text_rect, mode, (x, y))
         # Draw the text
-        if bg_color: pygame.draw.rect(self.screen, bg_color, text_rect)
+        if bg_color:
+            pygame.draw.rect(self.screen, bg_color, text_rect)
         self.screen.blit(text_obj, text_rect)
 
     def update_screen_size(self, new_size):
@@ -523,8 +548,9 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
         # Updates stuff
         self.size = new_size
         self.center = center
-        self.airspace.topleft = (self.x + self.width*7/16,
-                self.y + self.height/24)
+        self.airspace.topleft = (
+            self.x + self.width*7/16,
+            self.y + self.height/24)
         self.airspace.size = (self.width*35/64, self.height*35/48)
         self.scale_images()
         self.scale_fonts()
@@ -536,10 +562,11 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
             x, y = self.images[image_name].get_rect().size
             x *= (self.width / self.DEFAULT_SIZE[0])
             y *= (self.height / self.DEFAULT_SIZE[1])
-            x = int(x); y = int(y)
+            x = int(x)
+            y = int(y)
             self.scaled_images[image_name] = pygame.transform.scale(
-                    self.images[image_name], (x, y))
-                    
+                self.images[image_name], (x, y))
+
     def scale_fonts(self):
         """Set up the fonts with the correct size.
 
@@ -562,30 +589,35 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                 closest_dist = dist
                 closest_objective = obj
         self.closest_objective = closest_objective
-        
+
         # attitude tape
         attitude_tape = pygame.transform.rotate(
-                self.scaled_images['attitudetape-bg'],
-                self.plane.roll_degrees)
+            self.scaled_images['attitudetape-bg'],
+            self.plane.roll_degrees)
         # calculate the position
         attitude_tape_rect = attitude_tape.get_rect()
-        attitude_tape_rect.center = (self.x + self.width*55/256,
-                self.y + self.height*9/24)
-        offset_total = (attitude_tape_rect.height * 3/1600 * self.height
-                /attitude_tape_rect.height * self.plane.pitch_degrees)
+        attitude_tape_rect.center = (
+            self.x + self.width*55/256,
+            self.y + self.height*9/24)
+        offset_total = (
+            attitude_tape_rect.height * 3/1600 * self.height
+            / attitude_tape_rect.height * self.plane.pitch_degrees)
         offset_x = math.sin(self.plane.roll) * offset_total
         offset_y = math.cos(self.plane.roll) * offset_total
         attitude_tape_rect.x += offset_x
         attitude_tape_rect.y += offset_y
 
         attitude_tape_overlay = pygame.transform.rotate(
-                self.scaled_images['attitudetape-overlay'],
-                self.plane.roll_degrees)
+            self.scaled_images['attitudetape-overlay'],
+            self.plane.roll_degrees)
         attitude_tape_overlay_rect = attitude_tape_overlay.get_rect()
-        attitude_tape_overlay_rect.center = (self.x + self.width*55/256,
-                self.y + self.height*9/24)
-        offset_total = (attitude_tape_overlay_rect.height*3/1600*self.height
-                /attitude_tape_overlay_rect.height * self.plane.pitch_degrees)
+        attitude_tape_overlay_rect.center = (
+            self.x + self.width*55/256,
+            self.y + self.height*9/24)
+        offset_total = (
+            attitude_tape_overlay_rect.height * 3/1600 * self.height
+            / attitude_tape_overlay_rect.height
+            * self.plane.pitch_degrees)
         offset_x = math.sin(self.plane.roll) * offset_total
         offset_y = math.cos(self.plane.roll) * offset_total
         attitude_tape_overlay_rect.x += offset_x
@@ -593,178 +625,205 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
         self.screen.blit(attitude_tape, attitude_tape_rect)
         self.screen.blit(attitude_tape_overlay, attitude_tape_overlay_rect)
         # surrounding panels
-        pygame.draw.rect(self.screen, self.colors['panel'],
-                (self.x + self.size[0]*5/256, self.y + self.size[1]*5/48,
-                self.size[0]*25/64, self.size[1]*7/48))
-        pygame.draw.rect(self.screen, self.colors['panel'],
-                (self.x + self.size[0]*5/256, self.y + self.size[1]*5/48,
-                self.size[0]*15/128, self.size[1]*25/48))
-        pygame.draw.rect(self.screen, self.colors['panel'],
-                (self.x + self.size[0]*75/256, self.y + self.size[1]*5/48,
-                self.size[0]*15/128, self.size[1]*25/48))
-        pygame.draw.rect(self.screen, self.colors['panel'],
-                (self.x + self.size[0]*5/256, self.y + self.size[1]/2,
-                self.size[0]*25/64, self.size[1]*7/48))
-        self.screen.blit(self.scaled_images['attitudecrosshair'],
-                (self.x + self.size[0]*35/256, self.y + self.size[1]*9/24))
+        pygame.draw.rect(
+            self.screen, self.colors['panel'],
+            (self.x + self.size[0]*5/256, self.y + self.size[1]*5/48,
+             self.size[0]*25/64, self.size[1]*7/48))
+        pygame.draw.rect(
+            self.screen, self.colors['panel'],
+            (self.x + self.size[0]*5/256, self.y + self.size[1]*5/48,
+             self.size[0]*15/128, self.size[1]*25/48))
+        pygame.draw.rect(
+            self.screen, self.colors['panel'],
+            (self.x + self.size[0]*75/256, self.y + self.size[1]*5/48,
+             self.size[0]*15/128, self.size[1]*25/48))
+        pygame.draw.rect(
+            self.screen, self.colors['panel'],
+            (self.x + self.size[0]*5/256, self.y + self.size[1]/2,
+             self.size[0]*25/64, self.size[1]*7/48))
+        self.screen.blit(
+            self.scaled_images['attitudecrosshair'],
+            (self.x + self.size[0]*35/256, self.y + self.size[1]*9/24))
 
         # redraw background
-        pygame.draw.rect(self.screen, self.colors['background'],
-                (0, 0, self.x*2 + self.size[0], self.y + self.size[1]*5/48))
-        pygame.draw.rect(self.screen, self.colors['background'],
-                (0, 0, self.x + self.size[0]*5/256, self.y*2 + self.size[1]))
-        pygame.draw.rect(self.screen, self.colors['background'],
-                (0, self.y + self.size[1]*15/24,
-                self.x*2 + self.size[0], self.y + self.size[1]*9/24))
-        pygame.draw.rect(self.screen, self.colors['background'],
-                (self.x + self.size[0]*105/256 - 1, 0, 
-                self.x + self.size[0]*151/256, self.y*2 + self.size[1]))
+        pygame.draw.rect(
+            self.screen, self.colors['background'],
+            (0, 0, self.x*2 + self.size[0], self.y + self.size[1]*5/48))
+        pygame.draw.rect(
+            self.screen, self.colors['background'],
+            (0, 0, self.x + self.size[0]*5/256, self.y*2 + self.size[1]))
+        pygame.draw.rect(
+            self.screen, self.colors['background'],
+            (0, self.y + self.size[1]*15/24,
+             self.x*2 + self.size[0], self.y + self.size[1]*9/24))
+        pygame.draw.rect(
+            self.screen, self.colors['background'],
+            (self.x + self.size[0]*105/256 - 1, 0,
+             self.x + self.size[0]*151/256, self.y*2 + self.size[1]))
         # The -1 deals with an issue with sizing innacuracy.
 
         # draw NAV/airspace
         self.airspace.draw(self.screen, self.scaled_images)
-        
+
         # NAV text
-        self.draw_text("PLANE LOCATION",
-                self.x + self.size[0]*29/64, self.y + self.size[1]/16,
-                color_id='white', mode='topleft')
-        self.draw_text(self.get_unit_text(self.plane.x, 'pos', 'X', False),
-                self.x + self.size[0]*29/64, self.y + self.size[1]/12,
-                color_id='white', mode='topleft')
-        self.draw_text(self.get_unit_text(self.plane.z, 'pos', 'Z', False),
-                self.x + self.size[0]*29/64, self.y + self.size[1]*5/48,
-                color_id='white', mode='topleft')
-        self.draw_text(self.get_unit_text(self.plane.altitude, 'pos', 'ALT'),
-                self.x + self.size[0]*29/64, self.y + self.size[1]/8,
-                color_id='white', mode='topleft')
-        self.draw_text("HEADING: %.1f\xb0" % self.plane.heading_degrees,
-                self.x + self.size[0]*91/128, self.y + self.size[1]/16,
-                color_id='white', mode='midtop')
-        self.draw_text("PITCH: %.1f\xb0" % self.plane.pitch_degrees,
-                self.x + self.size[0]*91/128, self.y + self.size[1]/12,
-                color_id='white', mode='midtop')
-        self.draw_text("SCORE: %i" % self.plane.points,
-                self.x + self.size[0]*91/128, self.y + self.size[1]*5/48,
-                color_id='white', mode='midtop')
-        self.draw_text("OBJECTIVE LOCATION",
-                self.x + self.size[0]*31/32, self.y + self.size[1]/16,
-                color_id='white', mode='topright')
-        self.draw_text(self.get_unit_text(
-                closest_objective.x, 'pos', 'X', False),
-                self.x + self.size[0]*31/32, self.y + self.size[1]/12,
-                color_id='white', mode='topright')
-        self.draw_text(self.get_unit_text(
-                closest_objective.z, 'pos', 'Z', False),
-                self.x + self.size[0]*31/32, self.y + self.size[1]*5/48,
-                color_id='white', mode='topright')
-        self.draw_text(self.get_unit_text(
-                closest_objective.altitude, 'pos', 'ALT'),
-                self.x + self.size[0]*31/32, self.y + self.size[1]/8,
-                color_id='white', mode='topright')
+        self.draw_text(
+            "PLANE LOCATION",
+            self.x + self.size[0]*29/64, self.y + self.size[1]/16,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            self.get_unit_text(self.plane.x, 'pos', 'X', False),
+            self.x + self.size[0]*29/64, self.y + self.size[1]/12,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            self.get_unit_text(self.plane.z, 'pos', 'Z', False),
+            self.x + self.size[0]*29/64, self.y + self.size[1]*5/48,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            self.get_unit_text(self.plane.altitude, 'pos', 'ALT'),
+            self.x + self.size[0]*29/64, self.y + self.size[1]/8,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            "HEADING: %.1f\xb0" % self.plane.heading_degrees,
+            self.x + self.size[0]*91/128, self.y + self.size[1]/16,
+            color_id='white', mode='midtop')
+        self.draw_text(
+            "PITCH: %.1f\xb0" % self.plane.pitch_degrees,
+            self.x + self.size[0]*91/128, self.y + self.size[1]/12,
+            color_id='white', mode='midtop')
+        self.draw_text(
+            "SCORE: %i" % self.plane.points,
+            self.x + self.size[0]*91/128, self.y + self.size[1]*5/48,
+            color_id='white', mode='midtop')
+        self.draw_text(
+            "OBJECTIVE LOCATION",
+            self.x + self.size[0]*31/32, self.y + self.size[1]/16,
+            color_id='white', mode='topright')
+        self.draw_text(
+            self.get_unit_text(closest_objective.x, 'pos', 'X', False),
+            self.x + self.size[0]*31/32, self.y + self.size[1]/12,
+            color_id='white', mode='topright')
+        self.draw_text(
+            self.get_unit_text(closest_objective.z, 'pos', 'Z', False),
+            self.x + self.size[0]*31/32, self.y + self.size[1]*5/48,
+            color_id='white', mode='topright')
+        self.draw_text(
+            self.get_unit_text(closest_objective.altitude, 'pos', 'ALT'),
+            self.x + self.size[0]*31/32, self.y + self.size[1]/8,
+            color_id='white', mode='topright')
 
         # panel text
-        self.draw_text("THROTTLE",
-                self.x + self.size[0]*3/128, self.y + self.size[1]/4,
-                color_id='white', mode='topleft')
-        self.draw_text("%.1f%%" % self.plane.throttle,
-                self.x + self.size[0]*3/128, self.y + self.size[1]*13/48,
-                color_id='white', mode='topleft')
-        self.draw_text("GRAVITY", 
-                self.x + self.size[0]*3/128, self.y + self.size[1]*17/48,
-                color_id='white', mode='topleft')
-        self.draw_text(self.get_unit_text(-self.plane.gravity, 'speed'),
-                self.x + self.size[0]*3/128, self.y + self.size[1]*3/8,
-                color_id='white', mode='topleft')
-        self.draw_text("DAMAGE",
-                self.x + self.size[0]*3/128, self.y + self.size[1]*11/24,
-                color_id='white', mode='topleft')
-        self.draw_text("%.1f%%" % (100 - self.plane.health),
-                self.x + self.size[0]*3/128, self.y + self.size[1]*23/48,
-                color_id='white', mode='topleft')
-        self.draw_text("SPEED", 
-                self.x + self.size[0]*5/16, self.y + self.size[1]/4,
-                color_id='white', mode='topleft')
-        self.draw_text(self.get_unit_text(self.plane.speed, 'speed'),
-                self.x + self.size[0]*5/16, self.y + self.size[1]*13/48,
-                color_id='white', mode='topleft')
-        self.draw_text("HORIZ SPD",
-                self.x + self.size[0]*5/16, self.y + self.size[1]*17/48,
-                color_id='white', mode='topleft')
-        self.draw_text(self.get_unit_text(
-                self.plane.horizontal_speed, 'speed'),
-                self.x + self.size[0]*5/16, self.y + self.size[1]*3/8,
-                color_id='white', mode='topleft')
-        self.draw_text("VERT SPD",
-                self.x + self.size[0]*5/16, self.y + self.size[1]*11/24,
-                color_id='white', mode='topleft')
-        self.draw_text(self.get_unit_text(
-                self.plane.vertical_velocity, 'speed'),
-                self.x + self.size[0]*5/16, self.y + self.size[1]*23/48,
-                color_id='white', mode='topleft')
+        self.draw_text(
+            "THROTTLE",
+            self.x + self.size[0]*3/128, self.y + self.size[1]/4,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            "%.1f%%" % self.plane.throttle,
+            self.x + self.size[0]*3/128, self.y + self.size[1]*13/48,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            "GRAVITY",
+            self.x + self.size[0]*3/128, self.y + self.size[1]*17/48,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            self.get_unit_text(-self.plane.gravity, 'speed'),
+            self.x + self.size[0]*3/128, self.y + self.size[1]*3/8,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            "DAMAGE",
+            self.x + self.size[0]*3/128, self.y + self.size[1]*11/24,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            "%.1f%%" % (100 - self.plane.health),
+            self.x + self.size[0]*3/128, self.y + self.size[1]*23/48,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            "SPEED",
+            self.x + self.size[0]*5/16, self.y + self.size[1]/4,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            self.get_unit_text(self.plane.speed, 'speed'),
+            self.x + self.size[0]*5/16, self.y + self.size[1]*13/48,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            "HORIZ SPD",
+            self.x + self.size[0]*5/16, self.y + self.size[1]*17/48,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            self.get_unit_text(self.plane.horizontal_speed, 'speed'),
+            self.x + self.size[0]*5/16, self.y + self.size[1]*3/8,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            "VERT SPD",
+            self.x + self.size[0]*5/16, self.y + self.size[1]*11/24,
+            color_id='white', mode='topleft')
+        self.draw_text(
+            self.get_unit_text(self.plane.vertical_velocity, 'speed'),
+            self.x + self.size[0]*5/16, self.y + self.size[1]*23/48,
+            color_id='white', mode='topleft')
 
         # throttle bar
         pygame.draw.rect(self.screen, self.colors['red'],
-                (self.x + self.size[0]*15/128,
-                 self.y + self.size[1]*76/192,
-                self.size[0]/64, self.size[1]*5/192))
+                         (self.x + self.size[0]*15/128,
+                          self.y + self.size[1]*76/192,
+                          self.size[0]/64, self.size[1]*5/192))
         pygame.draw.rect(self.screen, self.colors['white'],
-                (self.x + self.size[0]*15/128,
-                 self.y + self.size[1]*81/192,
-                self.size[0]/64, self.size[1]*15/192))
+                         (self.x + self.size[0]*15/128,
+                          self.y + self.size[1]*81/192,
+                          self.size[0]/64, self.size[1]*15/192))
         pygame.draw.rect(self.screen, self.colors['green'],
-                (self.x + self.size[0]*15/128, self.y
-                 + self.size[1]/self.DEFAULT_SIZE[1]
-                 * (480-self.plane._throttle),
-                self.size[0]/64,
-                self.size[1]/self.DEFAULT_SIZE[1]*self.plane._throttle))
+                         (self.x + self.size[0]*15/128, self.y
+                          + self.size[1]/self.DEFAULT_SIZE[1]
+                          * (480-self.plane.throttle),
+                          self.size[0]/64,
+                          self.size[1]/self.DEFAULT_SIZE[1]
+                          *self.plane.throttle))
 
         # status
         for line_id in range(len(self.status)):
             self.draw_text(self.status[line_id],
-                    self.x + self.size[0]*5/256,
-                    self.y + self.size[1]*(21/32+1/24*line_id),
-                    font_id="large", color_id='white', mode='topleft')
-
+                           self.x + self.size[0]*5/256,
+                           self.y + self.size[1]*(21/32+1/24*line_id),
+                           font_id="large", color_id='white',
+                           mode='topleft')
         # warnings
         if self.show_warning("pullup"):
             self.screen.blit(self.scaled_images['msg_pullup'],
-                    (self.x + self.size[0]*5/32,
-                     self.y + self.size[1]*49/96))
+                             (self.x + self.size[0]*5/32,
+                              self.y + self.size[1]*49/96))
         if self.show_warning("terrain"):
             self.screen.blit(self.scaled_images['msg_warning'],
-                    (self.x + self.size[0]*187/1280,
-                     self.y + self.size[1]*7/40))
+                             (self.x + self.size[0]*187/1280,
+                              self.y + self.size[1]*7/40))
         if self.show_warning("stall"):
             self.screen.blit(self.scaled_images['msg_stall'],
-                    (self.x + self.size[0]*33/1280,
-                     self.y + self.size[1]*491/960))
+                             (self.x + self.size[0]*33/1280,
+                              self.y + self.size[1]*491/960))
         if self.show_warning("bank_angle"):
             self.screen.blit(self.scaled_images['msg_bankangle'],
-                    (self.x + self.size[0]/40,
-                     self.y + self.size[1]*109/192))
+                             (self.x + self.size[0]/40,
+                              self.y + self.size[1]*109/192))
         if self.show_warning("overspeed"):
             self.screen.blit(self.scaled_images['msg_overspeed'],
-                    (self.x + self.size[0]*73/256,
-                     self.y + self.size[1]*49/96))
+                             (self.x + self.size[0]*73/256,
+                              self.y + self.size[1]*49/96))
         # autopilot message
         if self.plane.autopilot_enabled:
             self.screen.blit(self.scaled_images['msg_apengaged'],
-                    (self.x + self.size[0]*17/128,
-                     self.y + self.size[1]*11/96))
+                             (self.x + self.size[0]*17/128,
+                              self.y + self.size[1]*11/96))
         else:
             self.screen.blit(self.scaled_images['msg_apdisconnect'],
-                    (self.x + self.size[0]*7/64,
-                     self.y + self.size[1]*11/96))
+                             (self.x + self.size[0]*7/64,
+                              self.y + self.size[1]*11/96))
         # calculate the coordinates for the units button
         self.btn_units = pygame.rect.Rect(
-                self.x + self.size[0]*5/256, self.y + self.size[1]*5/96,
-                self.size[0] / 8, self.size[0] / 36)
+            self.x + self.size[0]*5/256, self.y + self.size[1]*5/96,
+            self.size[0] / 8, self.size[0] / 36)
         # draw the units button
         pygame.draw.rect(self.screen, self.colors['panel'],
-                self.btn_units)
+                         self.btn_units)
         txt = self.fonts['default'].render("Units: {}".format(
-                self.UNITS[self.unit_id]['name']), 1,
-                self.colors['white'])
+            self.UNITS[self.unit_id]['name']), 1, self.colors['white'])
         text_rect = txt.get_rect()
         text_rect.center = self.btn_units.center
         self.screen.blit(txt, text_rect)
@@ -773,17 +832,18 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                       include_unit=True):
         """Get text in a certain unit."""
         if label is None:
-            text = ("%%.%if"
-                % self.UNITS[self.unit_id][unit_name]['round-to']
+            text = (
+                "%%.%if" % self.UNITS[self.unit_id][unit_name][
+                    'round-to']
                 % (value * self.UNITS[self.unit_id][unit_name]['value']))
         else:
             text = ("%%s: %%.%if"
-                % self.UNITS[self.unit_id][unit_name]['round-to']
-                % (label, value
-                * self.UNITS[self.unit_id][unit_name]['value']))
+                    % self.UNITS[self.unit_id][unit_name]['round-to']
+                    % (label, value
+                       * self.UNITS[self.unit_id][unit_name]['value']))
         if include_unit: # add the unit name
-            text = ' '.join((text,
-                self.UNITS[self.unit_id][unit_name]['name']))
+            text = ' '.join((text, self.UNITS[self.unit_id][unit_name][
+                'name']))
         return text
 
     def control_plane(self):
@@ -792,8 +852,10 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
             keys = pygame.key.get_pressed()
             # Combine  keys and self.keys_held & remove  duplicates
             for keyid, key in enumerate(keys):
-                if key: self.keys_held[keyid] += 1
-                else: self.keys_held[keyid] = 0
+                if key:
+                    self.keys_held[keyid] += 1
+                else:
+                    self.keys_held[keyid] = 0
             # left/right
             self.plane.roll_level -= ((self.keys_held[self.controls[
                 'horiz-']] / 3) ** .75 / self.fps)
@@ -801,14 +863,14 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
                 'horiz+']] / 3) ** .75 / self.fps)
             # up/down
             self.plane.vertical_roll_level -= ((self.keys_held[
-                    self.controls['vert-']] / 3) ** .75 / self.fps)
+                self.controls['vert-']] / 3) ** .75 / self.fps)
             self.plane.vertical_roll_level += ((self.keys_held[
-                    self.controls['vert+']] / 3) ** .75 / self.fps)
+                self.controls['vert+']] / 3) ** .75 / self.fps)
             # throttle
             self.plane.throttle -= ((self.keys_held[self.controls[
-                    'throttle-']] / 3) ** .75 / self.fps)
+                'throttle-']] / 3) ** .75 / self.fps)
             self.plane.throttle += ((self.keys_held[self.controls[
-                    'throttle+']] / 3) ** .75 / self.fps)
+                'throttle+']] / 3) ** .75 / self.fps)
             # keypress events
             for event in self.events:
                 if event.type == pygame.KEYDOWN:
@@ -828,25 +890,26 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
     def calculate_warnings(self):
         """Determine what warnings to be turned on and off."""
         self.warnings["stall"]["condition"] = (
-                self.plane.speed < self.plane.MAX_SPEED * 0.2
-                and self.plane.altitude != 0)
-        self.warnings["overspeed"]["condition"] = \
-                self.plane.speed > self.plane.MAX_SPEED * 0.75
-        self.warnings["bank_angle"]["condition"] = \
-                abs(self.plane.roll_degrees) >= 30
+            self.plane.speed < self.plane.MAX_SPEED * 0.2
+            and self.plane.altitude != 0)
+        self.warnings["overspeed"]["condition"] = (
+            self.plane.speed > self.plane.MAX_SPEED * 0.75)
+        self.warnings["bank_angle"]["condition"] = (
+            abs(self.plane.roll_degrees) >= 30)
         self.warnings["pullup"]["condition"] = (
-                self.plane.altitude <= 1000
-                and self.plane.total_vertical_velocity <= -20)
+            self.plane.altitude <= 1000
+            and self.plane.total_vertical_velocity <= -20)
         self.warnings["terrain"]["condition"] = (
-                self.plane.altitude <= 500
-                and self.plane.speed > self.plane.MAX_SPEED * 0.3)
-        self.warnings["altitude"]["condition"] = (abs(self.plane.altitude
+            self.plane.altitude <= 500
+            and self.plane.speed > self.plane.MAX_SPEED * 0.3)
+        self.warnings["altitude"]["condition"] = (
+            abs(self.plane.altitude
                 - self.closest_objective.altitude)
-                <= self.airspace.ALTITUDE_WITHIN)
+            <= self.airspace.ALTITUDE_WITHIN)
         if not self.warnings["altitude"]["condition"]:
             self.warnings["altitude"]["show"] = True
-        self.warnings["autopilot"]["condition"] = \
-                not self.plane.autopilot_enabled
+        self.warnings["autopilot"]["condition"] = (
+            not self.plane.autopilot_enabled)
         if not self.warnings["autopilot"]["condition"]:
             self.warnings["autopilot"]["show"] = True
 
@@ -889,24 +952,26 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
         # outputs stats in the correct order
         for plane_id in range(len(self.airspace.planes)):
             for plane in self.airspace.planes:
-                if plane.id_ == plane_id: break
-            output.append(plane.__repr__(False))
+                if plane.id_ == plane_id:
+                    output.append(plane.__repr__(False))
+                    break
         for objective_id in range(len(self.airspace.objectives)):
             for objective in self.airspace.objectives:
-                if objective.id_ == objective_id: break
-            output.append(objective.__repr__(False))
+                if objective.id_ == objective_id:
+                    output.append(objective.__repr__(False))
+                    break
         logging.debug(''.join(output))
 
     def get_tick_values(self):
         """Prepare the values for the log."""
         self.tick += 1
         self.previous_time = self.time
-        self.time = time.time()  
+        self.time = time.time()
 
     # -------------------------------------------------------------------
     # MAIN LOOPS
     # -------------------------------------------------------------------
-            
+
     def startup_screen(self):
         """Activate the startup screen. Stage=0"""
         pygame.mixer.music.stop()
@@ -915,14 +980,16 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
     def game_loop_startup(self):
         """One iteration of the startup screen loop."""
         # Draw the startup screen
-        self.screen.blit(self.scaled_images['logo'], ((self.size[0]
-                - self.images['logo'].get_width()) / 2,
-                self.size[1]/18.8))
-        self.screen.blit(self.scaled_images['logotext'], ((self.size[0]
-                - self.images['logotext'].get_width()) / 2,
-                self.size[1]/2.4))
+        self.screen.blit(self.scaled_images['logo'],
+                         ((self.size[0]
+                           - self.images['logo'].get_width()) / 2,
+                          self.size[1]/18.8))
+        self.screen.blit(self.scaled_images['logotext'],
+                         ((self.size[0]
+                           - self.images['logotext'].get_width()) / 2,
+                          self.size[1]/2.4))
         self.screen.blit(self.scaled_images['titleprompt'],
-                (self.size[0]*35/64, self.size[1]*35/48))
+                         (self.size[0]*35/64, self.size[1]*35/48))
         pygame.display.flip()
         # Events
         for event in self.events:
@@ -953,12 +1020,12 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
         elif self.paused != 1:
             self.draw()
             self.draw_text("PAUSED", self.airspace.center,
-                    color_id='white', font_id='large')
+                           color_id='white', font_id='large')
         else:
             self.draw()
         if self.exit_code: # If finished,
-            logging.info("Exited main loop with exitcode %i"
-                    % self.exit_code)
+            logging.info("Exited main loop with exitcode %i",
+                         self.exit_code)
             self.exit_title = self.EXIT_TITLES[self.exit_code]
             self.exit_reason = self.EXIT_REASONS[self.exit_code]
             self.exit_reason = self.exit_reason.format(self.plane.points)
@@ -989,7 +1056,8 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
             elif event.type == self.event_toggletext:
                 if self.paused:
                     self.paused += 1
-                    if self.paused >= 4: self.paused = 1
+                    if self.paused >= 4:
+                        self.paused = 1
         self.get_tick_values()
     GAME_STAGES[1] = main_screen
     GAME_LOOPS[1] = game_loop_main
@@ -1001,13 +1069,14 @@ created directory {}".format(os.path.abspath(self.LOG_PATH)))
     def game_loop_end(self):
         """One iteration of the end screen loop."""
         self.draw_text(self.exit_title,
-                (self.size[0]/37.6, self.size[0]/48),
-                mode='topleft', color_id='white', font_id='large')
+                       (self.size[0]/37.6, self.size[0]/48),
+                       mode='topleft', color_id='white', font_id='large')
         self.draw_text(self.exit_reason,
-                (self.size[0]/37.6, self.size[1]*5/48),
-                mode='bottomleft', color_id='white')
-        self.draw_text(self.status, (self.size[0]/37.6,
-                self.size[1]*35/48), mode='topleft', color_id="white")
+                       (self.size[0]/37.6, self.size[1]*5/48),
+                       mode='bottomleft', color_id='white')
+        self.draw_text(
+            self.status, (self.size[0]/37.6, self.size[1]*35/48),
+            mode='topleft', color_id="white")
         pygame.display.flip()
     GAME_STAGES[2] = end_screen
     GAME_LOOPS[2] = game_loop_end
