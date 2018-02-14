@@ -5,7 +5,7 @@ This is @MasterofNumbers17's Edition (The [original](https://github.com/haofoss/
 ## Dependencies
 Requires Python 2 or 3, Pygame
 
-This command installs them on GNU/Linux:
+This command installs them on Debian or Ubuntu GNU/Linux:
 
 Python 2: `sudo apt-get update && sudo apt-get install python python-pip && sudo pip install pygame`  
 Python 3: `sudo apt-get update && sudo apt-get install python3 python3-pip && sudo pip3 install pygame`
