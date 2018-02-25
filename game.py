@@ -204,13 +204,12 @@ Your score was {}.",
         self.scale_images()
         # Setup airspace
         self.airspace = airspace
-        self.airspace.topleft = (self.size[0]*7/16, self.size[1]/24)
-        self.airspace.size = (self.size[0]*35/64, self.size[1]*35/48)
+        self.airspace_rect = pygame.rect.Rect(
+            self.size[0]*7/16, self.size[1]/24,
+            self.size[0]*35/64, self.size[1]*35/48)
         # Setup plane and objective
-        self.plane = self.airspace.add_plane(
-            self.scaled_images['navmarker'], player_id=self.id_)
-        self.airspace.generate_objective(
-            self.scaled_images['objectivemarker'])
+        self.plane = self.airspace.add_plane(player_id=self.id_)
+        self.airspace.generate_objective()
         for obj in self.airspace.objectives: # Get closest objective
             self.closest_objective = obj
         # Makes a list of length [# of keys registered by Pygame + 1]
@@ -324,12 +323,12 @@ Your score was {}.",
         for plane_id in range(len(self.airspace.planes)):
             for plane in self.airspace.planes:
                 if plane.id_ == plane_id:
-                    output.append(plane.labels())
+                    output.append(plane.LABELS)
                     break
         for objective_id in range(len(self.airspace.objectives)):
             for objective in self.airspace.objectives:
                 if objective.id_ == objective_id:
-                    output.append(objective.labels())
+                    output.append(objective.LABELS)
                     break
         logging.debug(''.join(output)) # Log it!
 
@@ -663,7 +662,7 @@ Your score was {}.",
         # The -1 deals with an issue with sizing innacuracy.
 
         # draw NAV/airspace
-        self.airspace.draw(self.screen, self.scaled_images)
+        self.airspace.draw(self)
 
         # NAV text
         self.draw_text(
