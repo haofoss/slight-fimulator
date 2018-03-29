@@ -215,6 +215,7 @@ Your score was {}.",
         # Makes a list of length [# of keys registered by Pygame + 1]
         # The +1 is so key # -1 registers nothing
         self.keys_held = [0] * (len(pygame.key.get_pressed()) + 1)
+        self.music_playing = None
         self.stage = 0 # The stage (Beginning, In-Game, End)
         self.paused = 0 # 0 if unpaused; non-0 otherwise
         self.unit_id = 0 # The set of units used
@@ -973,22 +974,51 @@ Your score was {}.",
 
     def startup_screen(self):
         """Activate the startup screen. Stage=0"""
-        pygame.mixer.music.stop()
-        pygame.mixer.music.load(self.music_files['chilled-eks'])
-        pygame.mixer.music.play(-1)
+        if self.music_playing != 'chilled-eks':
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(self.music_files['chilled-eks'])
+            self.music_playing = 'chilled-eks'
+            pygame.mixer.music.play(-1)
     def game_loop_startup(self):
         """One iteration of the startup screen loop."""
         # Draw the startup screen
         self.screen.blit(self.scaled_images['logo'],
-                         ((self.size[0]
+                         ((self.x + self.width
                            - self.images['logo'].get_width()) / 2,
-                          self.size[1]/18.8))
+                          self.height/18.8))
         self.screen.blit(self.scaled_images['logotext'],
-                         ((self.size[0]
+                         ((self.x + self.width
                            - self.images['logotext'].get_width()) / 2,
-                          self.size[1]/2.4))
+                          self.height/2.4))
         self.screen.blit(self.scaled_images['titleprompt'],
-                         (self.size[0]*35/64, self.size[1]*35/48))
+                         (self.x + self.width*35/64,
+                          self.y + self.height*35/48))
+        # calculate the coordinates for the buttons
+        btn_play = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*5/192,
+            self.width / 6, self.height / 24)
+        btn_help = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*17/192,
+            self.width / 6, self.height / 24)
+        btn_settings = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*29/192,
+            self.width / 6, self.height / 24)
+        # draw the buttons
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_play)
+        self.draw_text(
+            "Play", btn_play.centerx, btn_play.centery,
+            color_id='white'
+        )
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_help)
+        self.draw_text(
+            "Instructions", btn_help.centerx, btn_help.centery,
+            color_id='white'
+        )
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_settings)
+        self.draw_text(
+            "Settings", btn_settings.centerx, btn_settings.centery,
+            color_id='white'
+        )
         pygame.display.flip()
         # Events
         for event in self.events:
@@ -998,15 +1028,57 @@ Your score was {}.",
                 elif event.key == pygame.K_ESCAPE:
                     self._stage = 'END'
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                self.stage = 1 # On mouse click, start game
+                if btn_play.collidepoint(event.pos):
+                    self.stage = 1 # On mouse click, start game
+                elif btn_settings.collidepoint(event.pos):
+                    self.stage = 'settings'
     GAME_STAGES[0] = startup_screen
     GAME_LOOPS[0] = game_loop_startup
 
+    def settings_screen(self):
+        """Activate the settings screen. Stage=settings"""
+        if self.music_playing != 'chilled-eks':
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(self.music_files['chilled-eks'])
+            self.music_playing = 'chilled-eks'
+            pygame.mixer.music.play(-1)
+    def game_loop_settings(self):
+        """The loop for the settings screen."""
+        # calculate the coordinates for the buttons
+        btn_play = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*5/192,
+            self.width / 6, self.height / 24)
+        btn_back = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*17/192,
+            self.width / 6, self.height / 24)
+        # draw the buttons
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_play)
+        self.draw_text(
+            "Play", btn_play.centerx, btn_play.centery,
+            color_id='white'
+        )
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_back)
+        self.draw_text(
+            "Back", btn_back.centerx, btn_back.centery,
+            color_id='white'
+        )
+        pygame.display.flip()
+        for event in self.events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if btn_play.collidepoint(event.pos):
+                    self.stage = 1 # On mouse click, start game
+                elif btn_back.collidepoint(event.pos):
+                    self.stage = 0
+    GAME_STAGES['settings'] = settings_screen
+    GAME_LOOPS['settings'] = game_loop_settings
+
     def main_screen(self):
         """Activate the main game screen. Stage=1"""
-        pygame.mixer.music.stop()
-        pygame.mixer.music.load(self.music_files['chip-respect'])
-        pygame.mixer.music.play(-1)
+        if self.music_playing != 'chip-respect':
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(self.music_files['chip-respect'])
+            self.music_playing = 'chip-respect'
+            pygame.mixer.music.play(-1)
         self.prepare_log()
         self.log()
     def game_loop_main(self):
@@ -1044,7 +1116,7 @@ Your score was {}.",
                         self.paused = 1
                         self.pause_start = time.time()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.btn_units.collidepoint(*event.pos):
+                if self.btn_units.collidepoint(event.pos):
                     self.unit_id += 1
                     if self.unit_id >= len(self.UNITS):
                         self.unit_id = 0
