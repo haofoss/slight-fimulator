@@ -90,6 +90,13 @@ class Airspace(pygame.rect.Rect):
             return plane
         raise TypeError("plane must be an Airplane or None.")
 
+    def remove_plane(self, player_id):
+        """Deletes the plane with id player_id."""
+        for plane in self.planes:
+            if plane.id_ == player_id:
+                self.planes.remove(plane)
+                break
+
     def generate_objective(self):
         """Generate an objective."""
         objective = Objective(

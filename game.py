@@ -262,7 +262,7 @@ Your score was {}.",
         self.music_playing = None
         self.stage = 0 # The stage (Beginning, In-Game, End)
         self.paused = 0 # 0 if unpaused; non-0 otherwise
-        self.status = ["Fly to the objective."]
+        self.status = "Fly to the objective."
         self.warnings = {
             "terrain": {
                 "condition": False,
@@ -335,6 +335,16 @@ Your score was {}.",
         }
         with open('{}/.options.json'.format(self.PATH), 'wt') as f:
             json.dump(preferences, f)
+
+    def reset(self):
+        """Resets the game for another play."""
+        self.airspace.remove_plane(self.id_)
+        for obj in self.airspace.objectives:
+            self.airspace.objectives.remove(obj)
+        self.plane = self.airspace.add_plane(player_id=self.id_)
+        self.airspace.generate_objective()
+        for obj in self.airspace.objectives: # Get closest objective
+            self.closest_objective = obj
 
     def prepare_log(self):
         """Prepare the log."""
@@ -530,7 +540,7 @@ Your score was {}.",
                 fonts_file.close()
             except Exception as e:
                 logging.warning(str(e))
-
+
     def draw_text(self, text, x, y=None, mode="center",
                   color_id=(0, 0, 0), font_id='default', antialias=1,
                   bg_color=None):
@@ -629,7 +639,7 @@ Your score was {}.",
             self.fonts[font_name] = pygame.font.Font(
                 self.font_data[font_name][0],
                 int(self.font_data[font_name][1] * self.height))
-
+
     def draw(self):
         """Draw the info box and airspace."""
         # get closest objective
@@ -831,8 +841,8 @@ Your score was {}.",
                           *self.plane.throttle))
 
         # status
-        for line_id in range(len(self.status)):
-            self.draw_text(self.status[line_id],
+        for line_id in range(len(self.status.split('\n'))):
+            self.draw_text(self.status.split('\n')[line_id],
                            self.x + self.size[0]*5/256,
                            self.y + self.size[1]*(21/32+1/24*line_id),
                            font_id="large", color_id='white',
@@ -871,7 +881,7 @@ Your score was {}.",
             # calculate the coordinates for the buttons
             self.btn_settings = pygame.rect.Rect(
                 self.x + self.width*5/256, self.y + self.height*5/96,
-                self.width / 8, self.height / 36)
+                self.width / 6, self.height / 24)
             # draw the buttons
             pygame.draw.rect(self.screen, self.colors['panel'],
                              self.btn_settings)
@@ -1019,7 +1029,7 @@ Your score was {}.",
         self.tick += 1
         self.previous_time = self.time
         self.time = time.time()
-
+
     # -------------------------------------------------------------------
     # MAIN LOOPS
     # -------------------------------------------------------------------
@@ -1212,7 +1222,7 @@ Your score was {}.",
             self.draw()
         elif self.paused != 1:
             self.draw()
-            self.draw_text("PAUSED", self.airspace.center,
+            self.draw_text("PAUSED", self.airspace_rect.center,
                            color_id='white', font_id='large')
         else:
             self.draw()
@@ -1257,18 +1267,25 @@ Your score was {}.",
     def end_screen(self):
         """Activate the end screen. Stage=2"""
         pygame.mixer.music.fadeout(10000) # Fades out over 10 seconds
-        self.status = "You may now close the program."
+        self.music_playing = None
     def game_loop_end(self):
         """One iteration of the end screen loop."""
         self.draw_text(self.exit_title,
-                       (self.size[0]/37.6, self.size[0]/48),
+                       (self.size[0]/37.6, self.height*5/192),
                        mode='topleft', color_id='white', font_id='large')
         self.draw_text(self.exit_reason,
-                       (self.size[0]/37.6, self.size[1]*5/48),
+                       (self.size[0]/37.6, self.height*17/192),
                        mode='bottomleft', color_id='white')
-        self.draw_text(
-            self.status, (self.size[0]/37.6, self.size[1]*35/48),
-            mode='topleft', color_id="white")
+        btn_reset = pygame.rect.Rect(
+                self.x + self.width*5/256, self.y + self.height*21/192,
+                self.width / 6, self.height / 24)
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_reset)
+        self.draw_text("Play Again", btn_reset.center, color_id='white')
         pygame.display.flip()
+        for event in self.events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                if btn_reset.collidepoint(event.pos):
+                    self.reset()
+                    self.stage = 1
     GAME_STAGES[2] = end_screen
     GAME_LOOPS[2] = game_loop_end
