@@ -66,6 +66,12 @@ class Client(pygame.rect.Rect):
 Your score was {}.",
         "Exited with exitcode 7 (unexpected). Please report."
     )
+    CONTROLS = [
+        'horiz-', 'horiz+', 'vert-', 'vert+',
+        'throttle+', 'throttle-', 'throttle-0', 'throttle-25',
+        'throttle-50', 'throttle-75', 'throttle-100',
+        'autopilot', 'pause', 'quit',
+    ]
     DEFAULT_CONTROLS = { # -1 means no key
         'horiz-': pygame.K_LEFT,
         'horiz+': pygame.K_RIGHT,
@@ -80,7 +86,23 @@ Your score was {}.",
         'throttle-100': -1,
         'autopilot': pygame.K_z,
         'pause': pygame.K_PAUSE,
-        'quit': pygame.K_ESCAPE,
+        'quit': pygame.K_ESCAPE
+    }
+    CONTROL_NAMES = {
+        'horiz-': "Left",
+        'horiz+': "Right",
+        'vert-': "Up",
+        'vert+': "Down",
+        'throttle+': "Increase Throttle",
+        'throttle-': "Decrease Throttle",
+        'throttle-0': "Set Throttle to 0",
+        'throttle-25': "Set Throttle to 25",
+        'throttle-50': "Set Throttle to 50",
+        'throttle-75': "Set Throttle to 75",
+        'throttle-100': "Set Throttle to 100",
+        'autopilot': "Autopilot",
+        'pause': "Pause",
+        'quit': "Quit",
     }
     UNITS = ( # The unit sets
         {
@@ -187,7 +209,7 @@ Your score was {}.",
         elif (self.plane.altitude <= 0
               and self.plane.total_vertical_velocity < -20):
             return 3
-        elif not self.airspace.in_bounds(self.plane):
+        elif not self.airspace.in_bounds(self.plane, False):
             return 4
 
     def mainloop(self, airspace):
@@ -216,6 +238,8 @@ Your score was {}.",
         # The +1 is so key # -1 registers nothing
         self.keys_held = [0] * (len(pygame.key.get_pressed()) + 1)
         self.music_playing = None
+        self.music_enabled = True
+        self.sound_enabled = True
         self.stage = 0 # The stage (Beginning, In-Game, End)
         self.paused = 0 # 0 if unpaused; non-0 otherwise
         self.unit_id = 0 # The set of units used
@@ -548,10 +572,10 @@ Your score was {}.",
         # Updates stuff
         self.size = new_size
         self.center = center
-        self.airspace.topleft = (
+        self.airspace_rect.topleft = (
             self.x + self.width*7/16,
             self.y + self.height/24)
-        self.airspace.size = (self.width*35/64, self.height*35/48)
+        self.airspace_rect.size = (self.width*35/64, self.height*35/48)
         self.scale_images()
         self.scale_fonts()
 
@@ -815,18 +839,15 @@ Your score was {}.",
             self.screen.blit(self.scaled_images['msg_apdisconnect'],
                              (self.x + self.size[0]*7/64,
                               self.y + self.size[1]*11/96))
-        # calculate the coordinates for the units button
-        self.btn_units = pygame.rect.Rect(
-            self.x + self.size[0]*5/256, self.y + self.size[1]*5/96,
-            self.size[0] / 8, self.size[0] / 36)
-        # draw the units button
+        # calculate the coordinates for the buttons
+        self.btn_settings = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*5/96,
+            self.width / 8, self.height / 36)
+        # draw the buttons
         pygame.draw.rect(self.screen, self.colors['panel'],
-                         self.btn_units)
-        txt = self.fonts['default'].render("Units: {}".format(
-            self.UNITS[self.unit_id]['name']), 1, self.colors['white'])
-        text_rect = txt.get_rect()
-        text_rect.center = self.btn_units.center
-        self.screen.blit(txt, text_rect)
+                         self.btn_settings)
+        self.draw_text("Settings", self.btn_settings.center,
+                       color_id='white')
 
     def get_unit_text(self, value, unit_name, label=None,
                       include_unit=True):
@@ -920,6 +941,8 @@ Your score was {}.",
 
     def play_sounds(self):
         """Play warning sounds."""
+        if not self.sound_enabled:
+            return
         if self.show_warning("pullup"):
             self.sounds['pullup'].play()
         elif self.show_warning("terrain"):
@@ -1005,20 +1028,11 @@ Your score was {}.",
             self.width / 6, self.height / 24)
         # draw the buttons
         pygame.draw.rect(self.screen, self.colors['panel'], btn_play)
-        self.draw_text(
-            "Play", btn_play.centerx, btn_play.centery,
-            color_id='white'
-        )
+        self.draw_text("Play", btn_play.center, color_id='white')
         pygame.draw.rect(self.screen, self.colors['panel'], btn_help)
-        self.draw_text(
-            "Instructions", btn_help.centerx, btn_help.centery,
-            color_id='white'
-        )
+        self.draw_text("Instructions", btn_help.center, color_id='white')
         pygame.draw.rect(self.screen, self.colors['panel'], btn_settings)
-        self.draw_text(
-            "Settings", btn_settings.centerx, btn_settings.centery,
-            color_id='white'
-        )
+        self.draw_text("Settings", btn_settings.center, color_id='white')
         pygame.display.flip()
         # Events
         for event in self.events:
@@ -1037,38 +1051,95 @@ Your score was {}.",
 
     def settings_screen(self):
         """Activate the settings screen. Stage=settings"""
-        if self.music_playing != 'chilled-eks':
-            pygame.mixer.music.stop()
-            pygame.mixer.music.load(self.music_files['chilled-eks'])
-            self.music_playing = 'chilled-eks'
-            pygame.mixer.music.play(-1)
+        self.prev_stage = self.stage
+        self.control_selected = None
     def game_loop_settings(self):
         """The loop for the settings screen."""
-        # calculate the coordinates for the buttons
-        btn_play = pygame.rect.Rect(
+        # back button
+        btn_back = pygame.rect.Rect(
             self.x + self.width*5/256, self.y + self.height*5/192,
             self.width / 6, self.height / 24)
-        btn_back = pygame.rect.Rect(
-            self.x + self.width*5/256, self.y + self.height*17/192,
-            self.width / 6, self.height / 24)
-        # draw the buttons
-        pygame.draw.rect(self.screen, self.colors['panel'], btn_play)
-        self.draw_text(
-            "Play", btn_play.centerx, btn_play.centery,
-            color_id='white'
-        )
         pygame.draw.rect(self.screen, self.colors['panel'], btn_back)
+        self.draw_text("Back", btn_back.center, color_id='white')
+        # music and sound
+        btn_music = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*21/192,
+            self.width / 6, self.height / 24)
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_music)
         self.draw_text(
-            "Back", btn_back.centerx, btn_back.centery,
-            color_id='white'
-        )
+            "Music {}".format(
+                "Enabled" if self.music_enabled else "Disabled"),
+            btn_music.center, color_id='white')
+        btn_sound = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*33/192,
+            self.width / 6, self.height / 24)
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_sound)
+        self.draw_text(
+            "Sound {}".format(
+                "Enabled" if self.sound_enabled else "Disabled"),
+            btn_sound.center, color_id='white')
+        btn_units = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*45/192,
+            self.width / 6, self.height / 24)
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_units)
+        self.draw_text(
+            "Units: {}".format(Client.UNITS[self.unit_id]['name']),
+            btn_units.center, color_id='white')
+        # Controls
+        x = 75
+        y = 9
+        control_buttons = []
+        for c in Client.CONTROLS:
+            y += 12
+            if y > 180:
+                y = 9
+                x += 50
+            k = self.controls[c]
+            if self.control_selected == c:
+                k = "Please press a key"
+            elif k == -1:
+                k = "No Key"
+            else:
+                k = pygame.key.name(k).title()
+            button = pygame.rect.Rect(
+                self.x + self.width*x/256, self.y + self.height*y/192,
+                self.width / 6, self.height / 24)
+            pygame.draw.rect(self.screen, self.colors['panel'], button)
+            self.draw_text(
+                "{}: {}".format(Client.CONTROL_NAMES[c], k),
+                button.center, color_id='white')
+            control_buttons.append(button)
         pygame.display.flip()
         for event in self.events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if btn_play.collidepoint(event.pos):
-                    self.stage = 1 # On mouse click, start game
-                elif btn_back.collidepoint(event.pos):
-                    self.stage = 0
+            if event.type == pygame.MOUSEBUTTONUP:
+                # Use the un-click instead of the click
+                if btn_back.collidepoint(event.pos):
+                    self.stage = self.prev_stage
+                elif btn_music.collidepoint(event.pos):
+                    if self.music_enabled:
+                        self.music_enabled = False
+                        # Set volume instead of stopping music
+                        # This allows music to run as normal,
+                        # just muted.
+                        pygame.mixer.music.set_volume(0)
+                    else:
+                        self.music_enabled = True
+                        pygame.mixer.music.set_volume(1)
+                elif btn_sound.collidepoint(event.pos):
+                    self.sound_enabled = not self.sound_enabled
+                elif btn_units.collidepoint(event.pos):
+                    self.unit_id += 1
+                    if self.unit_id >= len(Client.UNITS):
+                        self.unit_id = 0
+                else:
+                    for btn in control_buttons:
+                        if btn.collidepoint(event.pos):
+                            self.control_selected = Client.CONTROLS[
+                                control_buttons.index(btn)]
+            elif event.type == pygame.KEYDOWN:
+                if self.control_selected:
+                    self.controls[self.control_selected] = event.key
+                    self.control_selected = None
     GAME_STAGES['settings'] = settings_screen
     GAME_LOOPS['settings'] = game_loop_settings
 
@@ -1116,10 +1187,8 @@ Your score was {}.",
                         self.paused = 1
                         self.pause_start = time.time()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.btn_units.collidepoint(event.pos):
-                    self.unit_id += 1
-                    if self.unit_id >= len(self.UNITS):
-                        self.unit_id = 0
+                if self.btn_settings.collidepoint(event.pos):
+                    self.stage = 'settings'
             elif event.type == self.event_log and not self.paused:
                 self.log()
             elif event.type == self.event_warn:
