@@ -83,8 +83,8 @@ Your score was {}.",
             'throttle-50': -1,
             'throttle-75': pygame.K_F5,
             'throttle-100': -1,
-            'autopilot': pygame.K_z,
-            'pause': pygame.K_PAUSE,
+            'autopilot': pygame.K_a,
+            'pause': pygame.K_p,
             'quit': pygame.K_ESCAPE
         }
     }
