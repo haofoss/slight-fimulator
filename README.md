@@ -16,6 +16,8 @@ Python 2: `python slight-fimulator-master`
 Python 3: `python3 slight-fimulator-master`  
 You can also run the \_\_main\_\_.py file in your favourite IDE.
 
+## Default Controls
+
 | TO DO THIS                   | PRESS THIS     |
 |------------------------------|----------------|
 | Climb                        | ↓              |

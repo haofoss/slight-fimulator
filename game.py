@@ -867,15 +867,16 @@ Your score was {}.",
             self.screen.blit(self.scaled_images['msg_apdisconnect'],
                              (self.x + self.size[0]*7/64,
                               self.y + self.size[1]*11/96))
-        # calculate the coordinates for the buttons
-        self.btn_settings = pygame.rect.Rect(
-            self.x + self.width*5/256, self.y + self.height*5/96,
-            self.width / 8, self.height / 36)
-        # draw the buttons
-        pygame.draw.rect(self.screen, self.colors['panel'],
-                         self.btn_settings)
-        self.draw_text("Settings", self.btn_settings.center,
-                       color_id='white')
+        if self.paused:
+            # calculate the coordinates for the buttons
+            self.btn_settings = pygame.rect.Rect(
+                self.x + self.width*5/256, self.y + self.height*5/96,
+                self.width / 8, self.height / 36)
+            # draw the buttons
+            pygame.draw.rect(self.screen, self.colors['panel'],
+                             self.btn_settings)
+            self.draw_text("Settings", self.btn_settings.center,
+                           color_id='white')
 
     def get_unit_text(self, value, unit_name, label=None,
                       include_unit=True):
@@ -1199,6 +1200,9 @@ Your score was {}.",
             pygame.mixer.music.play(-1)
         self.prepare_log()
         self.log()
+        self.btn_settings = pygame.rect.Rect(
+                self.x + self.width*5/256, self.y + self.height*5/96,
+                self.width / 8, self.height / 36)
     def game_loop_main(self):
         """One iteration of the main loop."""
         if not self.paused:
@@ -1233,8 +1237,9 @@ Your score was {}.",
                         logging.info("Player paused")
                         self.paused = 1
                         self.pause_start = time.time()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.btn_settings.collidepoint(event.pos):
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if self.btn_settings.collidepoint(
+                        event.pos) and self.paused:
                     self.stage = 'settings'
             elif event.type == self.event_log and not self.paused:
                 self.log()
