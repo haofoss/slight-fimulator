@@ -25,6 +25,7 @@ from __future__ import division, print_function
 import argparse
 import datetime
 import io
+import json
 import logging
 import math
 import os
@@ -66,28 +67,34 @@ class Client(pygame.rect.Rect):
 Your score was {}.",
         "Exited with exitcode 7 (unexpected). Please report."
     )
+    DEFAULT_OPTIONS = {
+        'music': True,
+        'sound': True,
+        'units': 0,
+        'controls': { # -1 means no key
+            'horiz-': pygame.K_LEFT,
+            'horiz+': pygame.K_RIGHT,
+            'vert-': pygame.K_UP,
+            'vert+': pygame.K_DOWN,
+            'throttle+': pygame.K_F4,
+            'throttle-': pygame.K_F2,
+            'throttle-0': pygame.K_F1,
+            'throttle-25': pygame.K_F3,
+            'throttle-50': -1,
+            'throttle-75': pygame.K_F5,
+            'throttle-100': -1,
+            'autopilot': pygame.K_z,
+            'pause': pygame.K_PAUSE,
+            'quit': pygame.K_ESCAPE
+        }
+    }
     CONTROLS = [
         'horiz-', 'horiz+', 'vert-', 'vert+',
         'throttle+', 'throttle-', 'throttle-0', 'throttle-25',
         'throttle-50', 'throttle-75', 'throttle-100',
         'autopilot', 'pause', 'quit',
     ]
-    DEFAULT_CONTROLS = { # -1 means no key
-        'horiz-': pygame.K_LEFT,
-        'horiz+': pygame.K_RIGHT,
-        'vert-': pygame.K_UP,
-        'vert+': pygame.K_DOWN,
-        'throttle+': pygame.K_F4,
-        'throttle-': pygame.K_F2,
-        'throttle-0': pygame.K_F1,
-        'throttle-25': pygame.K_F3,
-        'throttle-50': -1,
-        'throttle-75': pygame.K_F5,
-        'throttle-100': -1,
-        'autopilot': pygame.K_z,
-        'pause': pygame.K_PAUSE,
-        'quit': pygame.K_ESCAPE
-    }
+    DEFAULT_CONTROLS = DEFAULT_OPTIONS['controls']
     CONTROL_NAMES = {
         'horiz-': "Left",
         'horiz+': "Right",
@@ -95,11 +102,11 @@ Your score was {}.",
         'vert+': "Down",
         'throttle+': "Increase Throttle",
         'throttle-': "Decrease Throttle",
-        'throttle-0': "Set Throttle to 0",
-        'throttle-25': "Set Throttle to 25",
-        'throttle-50': "Set Throttle to 50",
-        'throttle-75': "Set Throttle to 75",
-        'throttle-100': "Set Throttle to 100",
+        'throttle-0': "Set Throttle to 0%",
+        'throttle-25': "Set Throttle to 25%",
+        'throttle-50': "Set Throttle to 50%",
+        'throttle-75': "Set Throttle to 75%",
+        'throttle-100': "Set Throttle to 100%",
         'autopilot': "Autopilot",
         'pause': "Pause",
         'quit': "Quit",
@@ -145,6 +152,7 @@ Your score was {}.",
             }
         }
     )
+
     def __init__(self, window_size=DEFAULT_SIZE, player_id=None):
         """Initializes the instance. Does not start the game."""
         super(Client, self).__init__(0, 0, *window_size)
@@ -181,7 +189,19 @@ Your score was {}.",
         self.log_to_file = self.args.log_to_file
         self.log_level = getattr(logging, self.args.log_level)
         # Gets controls
-        self.controls = self.DEFAULT_CONTROLS.copy()
+        if os.path.exists("{}/.options.json".format(self.PATH)):
+            # options file found - use these
+            with open("{}/.options.json".format(self.PATH), 'rt') as f:
+                prefs = json.load(f)
+                self.controls = prefs['controls']
+                self.music_enabled = prefs['music']
+                self.sound_enabled = prefs['sound']
+                self.unit_id = prefs['units']
+        else:
+            self.controls = self.DEFAULT_CONTROLS.copy()
+            self.music_enabled = Client.DEFAULT_OPTIONS['music']
+            self.sound_enabled = Client.DEFAULT_OPTIONS['sound']
+            self.unit_id = Client.DEFAULT_OPTIONS['units']
     @property
     def id_(self):
         """Get the ID."""
@@ -223,6 +243,8 @@ Your score was {}.",
         self.load_resources()
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
+        if not self.music_enabled:
+            pygame.mixer.music.set_volume(0)
         self.scale_images()
         # Setup airspace
         self.airspace = airspace
@@ -238,11 +260,8 @@ Your score was {}.",
         # The +1 is so key # -1 registers nothing
         self.keys_held = [0] * (len(pygame.key.get_pressed()) + 1)
         self.music_playing = None
-        self.music_enabled = True
-        self.sound_enabled = True
         self.stage = 0 # The stage (Beginning, In-Game, End)
         self.paused = 0 # 0 if unpaused; non-0 otherwise
-        self.unit_id = 0 # The set of units used
         self.status = ["Fly to the objective."]
         self.warnings = {
             "terrain": {
@@ -307,7 +326,16 @@ Your score was {}.",
         pygame.quit() # Exits Pygame
         if self.resources_path.endswith('.zip'): # Close Zip
             self.resources.close()
-
+        # Save preferences
+        preferences = {
+            'music': self.music_enabled,
+            'sound': self.sound_enabled,
+            'units': self.unit_id,
+            'controls': self.controls
+        }
+        with open('{}/.options.json'.format(self.PATH), 'wt') as f:
+            json.dump(preferences, f)
+
     def prepare_log(self):
         """Prepare the log."""
         if not self.log_to_file: # Settings for output logging
@@ -1061,9 +1089,16 @@ Your score was {}.",
             self.width / 6, self.height / 24)
         pygame.draw.rect(self.screen, self.colors['panel'], btn_back)
         self.draw_text("Back", btn_back.center, color_id='white')
+        # reset button
+        btn_reset = pygame.rect.Rect(
+            self.x + self.width*5/256, self.y + self.height*17/192,
+            self.width / 6, self.height / 24)
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_reset)
+        self.draw_text(
+            "Reset Options", btn_reset.center, color_id='white')
         # music and sound
         btn_music = pygame.rect.Rect(
-            self.x + self.width*5/256, self.y + self.height*21/192,
+            self.x + self.width*5/256, self.y + self.height*33/192,
             self.width / 6, self.height / 24)
         pygame.draw.rect(self.screen, self.colors['panel'], btn_music)
         self.draw_text(
@@ -1071,7 +1106,7 @@ Your score was {}.",
                 "Enabled" if self.music_enabled else "Disabled"),
             btn_music.center, color_id='white')
         btn_sound = pygame.rect.Rect(
-            self.x + self.width*5/256, self.y + self.height*33/192,
+            self.x + self.width*5/256, self.y + self.height*45/192,
             self.width / 6, self.height / 24)
         pygame.draw.rect(self.screen, self.colors['panel'], btn_sound)
         self.draw_text(
@@ -1079,21 +1114,18 @@ Your score was {}.",
                 "Enabled" if self.sound_enabled else "Disabled"),
             btn_sound.center, color_id='white')
         btn_units = pygame.rect.Rect(
-            self.x + self.width*5/256, self.y + self.height*45/192,
+            self.x + self.width*5/256, self.y + self.height*57/192,
             self.width / 6, self.height / 24)
         pygame.draw.rect(self.screen, self.colors['panel'], btn_units)
         self.draw_text(
             "Units: {}".format(Client.UNITS[self.unit_id]['name']),
             btn_units.center, color_id='white')
-        # Controls
-        x = 75
-        y = 9
+        # Control Buttons
+        x = 65
+        y = 5
         control_buttons = []
         for c in Client.CONTROLS:
-            y += 12
-            if y > 180:
-                y = 9
-                x += 50
+            # Get key name
             k = self.controls[c]
             if self.control_selected == c:
                 k = "Please press a key"
@@ -1101,6 +1133,7 @@ Your score was {}.",
                 k = "No Key"
             else:
                 k = pygame.key.name(k).title()
+            # Create and draw button
             button = pygame.rect.Rect(
                 self.x + self.width*x/256, self.y + self.height*y/192,
                 self.width / 6, self.height / 24)
@@ -1109,12 +1142,26 @@ Your score was {}.",
                 "{}: {}".format(Client.CONTROL_NAMES[c], k),
                 button.center, color_id='white')
             control_buttons.append(button)
+            # Calculate next button's position
+            y += 12
+            if y > 76:
+                y = 5
+                x += 50
         pygame.display.flip()
         for event in self.events:
             if event.type == pygame.MOUSEBUTTONUP:
                 # Use the un-click instead of the click
                 if btn_back.collidepoint(event.pos):
                     self.stage = self.prev_stage
+                elif btn_reset.collidepoint(event.pos):
+                    self.controls = self.DEFAULT_CONTROLS.copy()
+                    self.music_enabled = Client.DEFAULT_OPTIONS['music']
+                    if self.music_enabled:
+                        pygame.mixer.music.set_volume(1)
+                    else:
+                        pygame.mixer.music.set_volume(0)
+                    self.sound_enabled = Client.DEFAULT_OPTIONS['sound']
+                    self.unit_id = Client.DEFAULT_OPTIONS['units']
                 elif btn_music.collidepoint(event.pos):
                     if self.music_enabled:
                         self.music_enabled = False
