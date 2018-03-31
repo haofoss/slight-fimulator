@@ -35,5 +35,5 @@ Just a bit of fimulating
 from __future__ import division, print_function, absolute_import
 
 __author__ = "Adrien Hopkins"
-__version__ = "3.1.0a2"
+__version__ = "3.1.0a3"
 __credits__ = ("Hao Tian",)
