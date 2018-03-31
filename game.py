@@ -88,6 +88,23 @@ Your score was {}.",
             'quit': pygame.K_ESCAPE
         }
     }
+    INSTRUCTIONS_TEXT = """\
+Welcome to Slight Fimulator! Use the arrow keys to control your plane.
+The goal is to fly your plane to the objective 10 times.
+
+You will need to start up the plane, use {} to set the throttle to 25%,
+the safest throttle setting at this low altitude
+Once the plane is going fast enough, use {} to go up and start flying.
+You can set your throttle to 75% now with {}, but don't go faster!
+
+In order to collect the objective, the plane must touch it and
+the plane's altitude must be within range of the objective.
+When you get the objective, another one will appear somewhere else
+and you will get a point.  Collect 10 points to proceed.
+
+Once you have 10 points, you must land back on the ground safely.
+Be careful of your falling speed, or you may crash!
+"""
     CONTROLS = [
         'horiz-', 'horiz+', 'vert-', 'vert+',
         'throttle+', 'throttle-', 'throttle-0', 'throttle-25',
@@ -1010,10 +1027,37 @@ Your score was {}.",
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if btn_play.collidepoint(event.pos):
                     self.stage = 1 # On mouse click, start game
+                elif btn_help.collidepoint(event.pos):
+                    self.stage = 'instructions'
                 elif btn_settings.collidepoint(event.pos):
                     self.stage = 'settings'
     GAME_STAGES[0] = startup_screen
     GAME_LOOPS[0] = game_loop_startup
+
+    def instructions_screen(self):
+        """Activate the instructions screen. Stage=instructions"""
+        self.prev_stage = self.stage
+        self.instructions_text = Client.INSTRUCTIONS_TEXT.format(
+            pygame.key.name(self.controls['throttle-25']),
+            pygame.key.name(self.controls['vert+']),
+            pygame.key.name(self.controls['throttle-75']))
+    def game_loop_instructions(self):
+        # back button
+        btn_back = self.get_rect(5/256, 5/192, 1/6, 1/24)
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_back)
+        self.draw_text("Back", btn_back.center, color_id='white')
+        for i, line in enumerate(self.instructions_text.split('\n')):
+            self.draw_text(
+                line, self.get_coords(55/256, i/30 + 1/40),
+                mode='topleft', color_id='white')
+        pygame.display.flip()
+        for event in self.events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                # Use the un-click instead of the click
+                if btn_back.collidepoint(event.pos):
+                    self.stage = self.prev_stage
+    GAME_STAGES['instructions'] = instructions_screen
+    GAME_LOOPS['instructions'] = game_loop_instructions
 
     def settings_screen(self):
         """Activate the settings screen. Stage=settings"""
