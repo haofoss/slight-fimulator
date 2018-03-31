@@ -40,21 +40,29 @@ class Airplane(pygame.sprite.Sprite):
 
     MAX_SPEED = 500
     TERMINAL_VELOCITY = MAX_SPEED / 5 # Why not?
-    def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
-                 player_id=None, drawpos_multiplier=None):
+
+    LABELS = "ID:\tX:\tY:\tALT:\tSPD:\tACCEL:\tVSPD:\t\
+HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t"
+    def __init__(self, x=(0, 0, 0, 0, 0), z=None, width=None,
+                 height=None, altitude=None, player_id=None):
         """Initialize the instance."""
         super(Airplane, self).__init__()
-        if y is None and altitude is not None:
-            x, y = x
-        elif y is None:
-            x, y, altitude = x
+        if z is None:
+            x, z, width, height, altitude = x
+        elif width is None:
+            altitude = z
+            x, z, width, height = x
+        elif height is None:
+            altitude = width
+            width, height = z
+            x, z = x
         if player_id is None: # Get an ID for the airplane
             self._id = Airplane.NEXT_ID
             Airplane.NEXT_ID += 1
         else: self._id = player_id
         # Initialize private variables
-        self._drawpos_multiplier = drawpos_multiplier
-        self._pos = [x, y]
+        self._pos = [x, z]
+        self._size = [width, height]
         self._altitude = altitude
         self._heading = 0
         self._pitch = 0
@@ -79,8 +87,6 @@ class Airplane(pygame.sprite.Sprite):
         self._health = 100
         self._time = time.time()
 
-        self._image = image
-
     def __repr__(self, show_labels=True):
         """Display some important stats about the plane."""
         msg = ("%i\t%i\t%i\t%i\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t\
@@ -89,7 +95,7 @@ class Airplane(pygame.sprite.Sprite):
                self.vertical_velocity, self.heading, self.roll,
                self.pitch, self.points, 100 - self.health))
         if show_labels:
-            return "%s\n%s" % (self.labels(), msg)
+            return "%s\n%s" % (Airplane.LABELS, msg)
         else:
             return msg
 
@@ -134,44 +140,6 @@ class Airplane(pygame.sprite.Sprite):
         if not isinstance(new_value, (int, float)):
             raise ValueError("Z must be a number")
         self._pos[1] = new_value
-    @property
-    def draw_pos(self):
-        """Get the plane's (x, z) draw position."""
-        return [self.x / self._drawpos_multiplier[0],
-                self.z / self._drawpos_multiplier[1]]
-    @draw_pos.setter
-    def draw_pos(self, new_value):
-        """Set the plane's (x, z) draw position."""
-        if not isinstance(new_value, (list, tuple)):
-            raise TypeError("Position must be a list or a tuple.")
-        if len(new_value) != 2:
-            raise ValueError("Position must contain two values.")
-        if not isinstance(new_value[0], (int, float)):
-            raise ValueError("X must be a number.")
-        if not isinstance(new_value[1], (int, float)):
-            raise ValueError("Z must be a number.")
-        self._pos[0] = self.rect.centerx * self._drawpos_multiplier[0]
-        self._pos[1] = self.rect.centery * self._drawpos_multiplier[1]
-    @property
-    def draw_x(self):
-        """Get the plane's x draw coordinate."""
-        return self.x / self._drawpos_multiplier[0]
-    @draw_x.setter
-    def draw_x(self, new_value):
-        """Set the plane's x draw coordinate."""
-        if not isinstance(new_value, (int, float)):
-            raise ValueError("Z must be a number")
-        self._pos[0] = new_value * self._drawpos_multiplier[0]
-    @property
-    def draw_z(self):
-        """Get the plane's z draw coordinate."""
-        return self.z / self._drawpos_multiplier[1]
-    @draw_z.setter
-    def draw_z(self, new_value):
-        """Set the plane's z draw coordinate."""
-        if not isinstance(new_value, (int, float)):
-            raise ValueError("Z must be a number")
-        self._pos[1] = new_value * self._drawpos_multiplier[1]
     @property
     def altitude(self):
         """Get the plane's altitude in metres."""
@@ -367,10 +335,7 @@ class Airplane(pygame.sprite.Sprite):
     @property
     def rect(self):
         """Get the plane's rect."""
-        rect_ = self.image.get_rect()
-        rect_.center = [self.x / self._drawpos_multiplier[0],
-                        self.z / self._drawpos_multiplier[1]]
-        return rect_
+        return pygame.rect.Rect(self._pos, self._size)
 
     def enable_autopilot(self):
         """Enable the autopilot."""
@@ -378,33 +343,23 @@ class Airplane(pygame.sprite.Sprite):
         for condition in self._autopilot_info['conditions']:
             self._autopilot_info['conditions'][condition] = False
 
-    def labels(self):
-        """Output the labels used in __repr__."""
-        return "ID:\tX:\tY:\tALT:\tSPD:\tACCEL:\tVSPD:\t\
-HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t"
-
-    def draw(self, screen, image, airspace_x, airspace_y=None):
+    def draw(self, client, airspace):
         """Draw the airplane."""
-        if airspace_y is None:
-            airspace_x, airspace_y = airspace_x
-        image_rotated = pygame.transform.rotate(
-            image, -self.heading_degrees)
-        # Calculate the image's position
-        draw_rect = image_rotated.get_rect()
-        draw_rect.center = self.rect.center
-        draw_rect.x += airspace_x
-        draw_rect.y += airspace_y
-        # Draw the image
-        screen.blit(image_rotated, draw_rect)
+        image = pygame.transform.rotate(
+            client.scaled_images['navmarker'], -self.heading_degrees)
+        draw_rect = image.get_rect()
+        draw_rect.center = (
+            self.x / airspace.width * client.airspace_rect.width
+            + client.airspace_rect.left,
+            self.z / airspace.height * client.airspace_rect.height
+            + client.airspace_rect.top
+        )
+        client.screen.blit(image, draw_rect)
 
-    def update(self, new_drawpos_multiplier=None):
+    def update(self):
         """Update the plane."""
         tick_duration = time.time() - self._time
         self._time = time.time()
-
-        # Update Scale
-        if new_drawpos_multiplier != None:
-            self._drawpos_multiplier = new_drawpos_multiplier
 
         # initialize damage
         damage = 0
@@ -469,23 +424,29 @@ HDG:\tROLL:\tPITCH:\tPTS:\tDMG:\t"
 class Objective(pygame.sprite.Sprite):
     """The class for an objective sprite."""
     NEXT_ID = 0
-    def __init__(self, image, x=(0, 0, 0), y=None, altitude=None,
-                 obj_id=None, airspace_dim=[700, 700]):
+
+    LABELS = "ID:\tX:\tY:\tALT:\t"
+    def __init__(self, x=(0, 0, 0, 0, 0), z=None, width=None,
+                 height=None, altitude=None, obj_id=None):
         """Initialize the instance."""
         super(Objective, self).__init__()
-        if y is None and altitude is not None:
-            x, y = x
-        elif y is None:
-            x, y, altitude = x
+        if z is None:
+            x, z, width, height, altitude = x
+        elif width is None:
+            altitude = z
+            x, z, width, height = x
+        elif height is None:
+            altitude = width
+            width, height = z
+            x, z = x
         if obj_id is None: # Get an ID for the objective
             self._id = Objective.NEXT_ID
             Objective.NEXT_ID += 1
         else: self._id = obj_id
         # Initialize private variables
-        self._drawpos_multiplier = [100000 / i for i in airspace_dim]
-        self._pos = [x, y]
+        self._pos = [x, z]
+        self._size = [width, height]
         self._altitude = altitude
-        self._image = image
 
     def __repr__(self, show_labels=True):
         """Display some important stats about the objective."""
@@ -537,44 +498,6 @@ class Objective(pygame.sprite.Sprite):
             raise ValueError("Z must be a number")
         self._pos[1] = new_value
     @property
-    def draw_pos(self):
-        """Get the objective's (x, z) draw position."""
-        return [self.x / self._drawpos_multiplier[0],
-                self.z / self._drawpos_multiplier[1]]
-    @draw_pos.setter
-    def draw_pos(self, new_value):
-        """Set the objective's (x, z) draw position."""
-        if not isinstance(new_value, (list, tuple)):
-            raise TypeError("Position must be a list or a tuple.")
-        if len(new_value) != 2:
-            raise ValueError("Position must contain two values.")
-        if not isinstance(new_value[0], (int, float)):
-            raise ValueError("X must be a number.")
-        if not isinstance(new_value[1], (int, float)):
-            raise ValueError("Z must be a number.")
-        self._pos[0] = self.rect.centerx * self._drawpos_multiplier[0]
-        self._pos[1] = self.rect.centery * self._drawpos_multiplier[1]
-    @property
-    def draw_x(self):
-        """Get the objective's x draw coordinate."""
-        return self.x / self._drawpos_multiplier[0]
-    @draw_x.setter
-    def draw_x(self, new_value):
-        """Set the objective's x draw coordinate."""
-        if not isinstance(new_value, (int, float)):
-            raise ValueError("Z must be a number")
-        self._pos[0] = new_value * self._drawpos_multiplier[0]
-    @property
-    def draw_z(self):
-        """Get the objective's z draw coordinate."""
-        return self.z / self._drawpos_multiplier[1]
-    @draw_z.setter
-    def draw_z(self, new_value):
-        """Set the objective's z draw coordinate."""
-        if not isinstance(new_value, (int, float)):
-            raise ValueError("Z must be a number")
-        self._pos[1] = new_value * self._drawpos_multiplier[1]
-    @property
     def altitude(self):
         """Get the objective's altitude in metres."""
         return self._altitude
@@ -592,41 +515,30 @@ class Objective(pygame.sprite.Sprite):
     @property
     def rect(self):
         """Get the plane's rect."""
-        rect_ = self.image.get_rect()
-        rect_.center = [self.x / self._drawpos_multiplier[0],
-                        self.z / self._drawpos_multiplier[1]]
-        return rect_
+        return pygame.rect.Rect(self._pos, self._size)
 
-    def labels(self):
-        """Output the labels used in __repr__."""
-        return "ID:\tX:\tY:\tALT:\t"
-
-    def update(self, new_drawpos_multiplier=None):
-        """Update the objective."""
-        if new_drawpos_multiplier != None:
-            self._drawpos_multiplier = new_drawpos_multiplier
-
-    def draw(self, screen, image, airspace_x, airspace_y=None):
+    def draw(self, client, airspace):
         """Draw the objective."""
-        if airspace_y is None:
-            airspace_x, airspace_y = airspace_x
-        # Calculate the image's position
-        draw_rect = self.rect.copy()
-        draw_rect.x += airspace_x
-        draw_rect.y += airspace_y
-        # Draw the image
-        screen.blit(image, draw_rect)
+        draw_rect = client.scaled_images['objectivemarker'].get_rect()
+        draw_rect.center = (
+            self.x / airspace.width * client.airspace_rect.width
+            + client.airspace_rect.left,
+            self.z / airspace.height * client.airspace_rect.height
+            + client.airspace_rect.top
+        )
+        client.screen.blit(
+            client.scaled_images['objectivemarker'], draw_rect)
 
 
 class AdvancedSpriteGroup(pygame.sprite.Group):
     """A Pygame sprite group, except you can index it."""
     def __init__(self, *args, **kw):
         """Initialize the instance."""
-        super(AdvancedSpriteGroup, self).__init__()
+        super(AdvancedSpriteGroup, self).__init__(*args, **kw)
 
     def __getitem__(self, key):
         """Get the sprite at key."""
         for sprite in self:
             if sprite.id_ == key:
                 return sprite
-            raise LookupError("Item {} not found.".format(key))
+            raise KeyError("Item {} not found.".format(key))

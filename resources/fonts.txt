@@ -1,0 +1,5 @@
+# decimal font size = multiply by window height (scalable)
+
+default=default 0.025
+medium=default 0.0375
+large=default 0.05
