@@ -71,6 +71,7 @@ Your score was {}.",
         'music': True,
         'sound': True,
         'units': 0,
+        'max-fps': 30,
         'controls': { # -1 means no key
             'horiz-': pygame.K_LEFT,
             'horiz+': pygame.K_RIGHT,
@@ -128,6 +129,7 @@ Be careful of your falling speed, or you may crash!
         'pause': "Pause",
         'quit': "Quit",
     }
+    FPS_OPTIONS = [1, 5, 10, 20, 30, 60, float('inf')]
     UNITS = ( # The unit sets
         {
             'name': "SI", # Set name
@@ -180,7 +182,6 @@ Be careful of your falling speed, or you may crash!
             self.resources_path = os.path.join(self.PATH, "resources.zip")
         else: raise Exception("Resources not found!")
         self.clock = pygame.time.Clock() # Controls ticking
-        self.max_fps = 60 # Controls max fps
         # Gets a player ID
         if player_id is None:
             self._id = Client.NEXT_ID
@@ -214,11 +215,13 @@ Be careful of your falling speed, or you may crash!
                 self.music_enabled = prefs['music']
                 self.sound_enabled = prefs['sound']
                 self.unit_id = prefs['units']
+                self.max_fps = prefs['max-fps']
         else:
             self.controls = self.DEFAULT_CONTROLS.copy()
             self.music_enabled = Client.DEFAULT_OPTIONS['music']
             self.sound_enabled = Client.DEFAULT_OPTIONS['sound']
             self.unit_id = Client.DEFAULT_OPTIONS['units']
+            self.max_fps = Client.DEFAULT_OPTIONS['max-fps']
     @property
     def id_(self):
         """Get the ID."""
@@ -349,6 +352,7 @@ Be careful of your falling speed, or you may crash!
             'music': self.music_enabled,
             'sound': self.sound_enabled,
             'units': self.unit_id,
+            'max-fps': self.max_fps,
             'controls': self.controls
         }
         with open('{}/.options.json'.format(self.PATH), 'wt') as f:
@@ -1092,6 +1096,11 @@ Be careful of your falling speed, or you may crash!
         self.draw_text(
             "Units: {}".format(Client.UNITS[self.unit_id]['name']),
             btn_units.center, color_id='white')
+        btn_fps = self.get_rect(5/256, 69/192, 1/6, 1/24)
+        pygame.draw.rect(self.screen, self.colors['panel'], btn_fps)
+        self.draw_text(
+            "Max FPS: {}".format(self.max_fps),
+            btn_fps.center, color_id='white')
         # Control Buttons
         x = 65
         y = 5
@@ -1148,11 +1157,17 @@ Be careful of your falling speed, or you may crash!
                     self.unit_id += 1
                     if self.unit_id >= len(Client.UNITS):
                         self.unit_id = 0
+                elif btn_fps.collidepoint(event.pos):
+                    fps_id = Client.FPS_OPTIONS.index(self.max_fps) + 1
+                    if fps_id >= len(Client.FPS_OPTIONS):
+                        fps_id = 0
+                    self.max_fps = Client.FPS_OPTIONS[fps_id]
                 else:
                     for btn in control_buttons:
                         if btn.collidepoint(event.pos):
                             self.control_selected = Client.CONTROLS[
                                 control_buttons.index(btn)]
+                            break
             elif event.type == pygame.KEYDOWN:
                 if self.control_selected:
                     self.controls[self.control_selected] = event.key
