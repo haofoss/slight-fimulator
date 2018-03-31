@@ -1,0 +1,7 @@
+ - Added a "name" option for background color presets
+     - Added a new preset that uses the colour named 'background'
+ - Background Presets are stored in the Game class
+     - They are still (temporarily) accessible through the old method
+ - color in draw_text renamed to color_id
+     - This now uses a name from your colors, but can still use a hex code/list
+ - in fonts.txt and colors/colours.txt, any lines starting with '#', as well as blank lines, are ignored.

@@ -34,6 +34,5 @@ Just a bit of fimulating
 # Installs Python 3 division, print and import behaviour
 from __future__ import division, print_function, absolute_import
 
-__author__ = "Adrien Hopkins"
+__author__ = "Adrien Hopkins and Hao Tian"
 __version__ = "3.1.0"
-__credits__ = ("Hao Tian",)
