@@ -3,7 +3,7 @@
 """Slight Fimulator is a 2D flight simulator written in Python.
 
 Slight Fimulator - Flight simulator in Python
-Copyright (C) 2017, 2018 Hao Tian and Adrien Hopkins
+Copyright (C) 2017, 2018, 2022 Hao Tian and Adrien Hopkins
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,4 +35,4 @@ Just a bit of fimulating
 from __future__ import division, print_function, absolute_import
 
 __author__ = "Adrien Hopkins and Hao Tian"
-__version__ = "3.1.2"
+__version__ = "3.1.3"
