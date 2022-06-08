@@ -1,4 +1,4 @@
-# Slight Fimulator Version 3.1.2
+# Slight Fimulator Version 3.1.3
 A flight simulator written in Python.
 
 ## Dependencies
@@ -11,8 +11,8 @@ Python 3: `sudo apt-get update && sudo apt-get install python3 python3-pip && su
 
 ## Usage
 
-Python 2: `python slight-fimulator-master`  
-Python 3: `python3 slight-fimulator-master`  
+Python 2: `python2 slight-fimulator-master`  
+Python 3: `python slight-fimulator-master`  
 You can also run the \_\_main\_\_.py file in your favourite IDE.
 
 ## Default Controls
@@ -31,6 +31,8 @@ You can also run the \_\_main\_\_.py file in your favourite IDE.
 | Center controls and throttle | A              |
 | Pause/Unpause the game       | P              |
 | Quit the game                | ESC            |
+
+All of these controls can be changed in the Settings menu.
 
 ## API
 
