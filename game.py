@@ -872,19 +872,19 @@ Be careful of your falling speed, or you may crash!
                     self.keys_held[keyid] = 0
             # left/right
             self.plane.roll_level -= ((self.keys_held[self.controls[
-                'horiz-']] / 3) ** .75 / self.fps)
+                'horiz-'] % len(keys)] / 3) ** .75 / self.fps)
             self.plane.roll_level += ((self.keys_held[self.controls[
-                'horiz+']] / 3) ** .75 / self.fps)
+                'horiz+'] % len(keys)] / 3) ** .75 / self.fps)
             # up/down
             self.plane.vertical_roll_level -= ((self.keys_held[
-                self.controls['vert-']] / 3) ** .75 / self.fps)
+                self.controls['vert-'] % len(keys)] / 3) ** .75 / self.fps)
             self.plane.vertical_roll_level += ((self.keys_held[
-                self.controls['vert+']] / 3) ** .75 / self.fps)
+                self.controls['vert+'] % len(keys)] / 3) ** .75 / self.fps)
             # throttle
             self.plane.throttle -= ((self.keys_held[self.controls[
-                'throttle-']] / 3) ** .75 / self.fps)
+                'throttle-'] % len(keys)] / 3) ** .75 / self.fps)
             self.plane.throttle += ((self.keys_held[self.controls[
-                'throttle+']] / 3) ** .75 / self.fps)
+                'throttle+'] % len(keys)] / 3) ** .75 / self.fps)
             # keypress events
             for event in self.events:
                 if event.type == pygame.KEYDOWN:
